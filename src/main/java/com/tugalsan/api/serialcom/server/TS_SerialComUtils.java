@@ -9,9 +9,16 @@ public class TS_SerialComUtils {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComUtils.class);
 
-    public static boolean send(SerialPort serialPort, String string) {
-        var byteArray = string.getBytes();
-        return serialPort.writeBytes(byteArray, byteArray.length) != -1;
+    public static boolean send(SerialPort serialPort, String command) {
+        var byteArray = command.getBytes();
+        var result = serialPort.writeBytes(byteArray, byteArray.length) != -1;
+        if (!result) {
+            return false;
+        }
+        if (!command.endsWith("\n")) {
+            return send(serialPort, "\n");
+        }
+        return result;
     }
 
     public static SerialPort[] list() {
@@ -45,6 +52,7 @@ public class TS_SerialComUtils {
             @Override
             public void serialEvent(SerialPortEvent event) {
                 if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
+                    d.ce("connect", "SerialPortDataListener", "serialEvent", "skip.event.getEventType", event.getEventType());
                     return;
                 }
                 var receivedData = new byte[serialPort.bytesAvailable()];
@@ -68,21 +76,44 @@ public class TS_SerialComUtils {
     }
 
     public static boolean setup(SerialPort serialPort, int newBaudRate, int newDataBits, int newStopBits, int newParity) {
-        return serialPort.setComPortParameters(newBaudRate, newDataBits, newStopBits, newParity);
+        var result = serialPort.setBaudRate(newBaudRate);
+        if (!result) {
+            d.ce("setup", "Error on setBaudRate");
+            return false;
+        }
+        result = serialPort.setNumDataBits(newDataBits);
+        if (!result) {
+            d.ce("setup", "Error on setNumDataBits");
+            return false;
+        }
+        result = serialPort.setNumStopBits(newStopBits);
+        if (!result) {
+            d.ce("setup", "Error on setNumStopBits");
+            return false;
+        }
+        result = serialPort.setParity(newParity);
+        if (!result) {
+            d.ce("setup", "Error on setParity");
+            return false;
+        }
+        return true;
     }
 
     //TODO WRITE A BUILDER
     public static void sendTest() {
         var serialPort = list()[0];
         d.cr("sendTest", "serialPort.name = " + name(serialPort));
-        d.cr("sendTest", "setup.isSuccessfull = " + setup(serialPort, 9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY));
+        d.cr("sendTest", "setup.isSuccessfull = " + setup(serialPort, 115200, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY));
         d.cr("sendTest", "connect.isSuccessfull = " + connect(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'")));
+        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
+        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
+        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
         d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
         d.cr("sendTest", "disconnect.isSuccessfull = " + disconnect(serialPort));
     }
 
     /* arduino
-    int inByte = 0;         // incoming serial byte
+int inByte = 0;         // incoming serial byte
 
 void setup() {
   // start serial port at 9600 bps:
