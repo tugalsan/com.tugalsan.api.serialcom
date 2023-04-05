@@ -21,20 +21,12 @@ public class TS_SerialComUtils {
         return SerialPort.getCommPorts();
     }
 
-    private static SerialPort connect(SerialPort serialPort) {
-        serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-        serialPort.openPort();
-        return serialPort;
-    }
-
     public static boolean disconnect(SerialPort serialPort) {
         serialPort.removeDataListener();
         return serialPort.closePort();
     }
 
-    public static SerialPort on(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
-        connect(serialPort);
+    private static SerialPort setListener(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
         serialPort.addDataListener(new SerialPortDataListener() {
             @Override
             public int getListeningEvents() {
@@ -58,6 +50,14 @@ public class TS_SerialComUtils {
         return serialPort;
     }
 
+    public static SerialPort connect_9600_8_1_N(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
+        serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+        serialPort.openPort();
+        setListener(serialPort, receivedData_Len);
+        return serialPort;
+    }
+
     public static String name(SerialPort serialPort) {
         return serialPort.getDescriptivePortName();
     }
@@ -65,7 +65,7 @@ public class TS_SerialComUtils {
     public static void sendTest() {
         var serialPort = list()[0];
         d.cr("sendTest", "serialPort.name = " + name(serialPort));
-        on(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'"));
+        connect_9600_8_1_N(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'"));
         d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
         d.cr("sendTest", "disconnect.isSuccessfull = " + disconnect(serialPort));
     }
