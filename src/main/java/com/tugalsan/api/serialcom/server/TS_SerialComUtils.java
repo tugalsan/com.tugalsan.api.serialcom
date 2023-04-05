@@ -9,12 +9,9 @@ public class TS_SerialComUtils {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComUtils.class);
 
-    private static boolean send(SerialPort serialPort, byte[] byteArray) {
-        return serialPort.writeBytes(byteArray, byteArray.length) != -1;
-    }
-
     public static boolean send(SerialPort serialPort, String string) {
-        return send(serialPort, string.getBytes());
+        var byteArray = string.getBytes();
+        return serialPort.writeBytes(byteArray, byteArray.length) != -1;
     }
 
     public static SerialPort[] list() {
@@ -26,7 +23,9 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    private static SerialPort setListener(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
+    private static SerialPort connectContinues(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
+        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+        serialPort.openPort();
         serialPort.addDataListener(new SerialPortDataListener() {
             @Override
             public int getListeningEvents() {
@@ -50,16 +49,15 @@ public class TS_SerialComUtils {
         return serialPort;
     }
 
-    public static SerialPort connect_9600_8_1_N(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
-        serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-        serialPort.openPort();
-        setListener(serialPort, receivedData_Len);
-        return serialPort;
-    }
-
     public static String name(SerialPort serialPort) {
         return serialPort.getDescriptivePortName();
+    }
+
+    //TODO WRITE A BUILDER
+    public static SerialPort connect_9600_8_1_N(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
+        serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+        connectContinues(serialPort, receivedData_Len);
+        return serialPort;
     }
 
     public static void sendTest() {
