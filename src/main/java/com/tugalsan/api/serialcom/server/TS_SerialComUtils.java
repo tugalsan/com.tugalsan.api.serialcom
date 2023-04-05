@@ -64,10 +64,10 @@ public class TS_SerialComUtils {
 
     public static void sendTest() {
         var serialPort = list()[0];
-        d.cr("serialPort.name = " + name(serialPort));
-        on(serialPort, receivedData -> d.cr("Read as '" + receivedData + "'"));
-        d.cr("send.isSuccessfull = " + send(serialPort, "test me out"));
-        d.cr("disconnect.isSuccessfull = " + disconnect(serialPort));
+        d.cr("sendTest", "serialPort.name = " + name(serialPort));
+        on(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'"));
+        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
+        d.cr("sendTest", "disconnect.isSuccessfull = " + disconnect(serialPort));
     }
 
     /* arduino
