@@ -51,8 +51,8 @@ public class TS_SerialComUtils {
     }
 
     public static void sendTest() {
-        var serialPort = on(connect(list()[0]), (receivedData, Len) -> {
-            System.out.println("Read " + Len + " bytes as '" + receivedData + "'");
+        var serialPort = on(connect(list()[0]), (receivedData, receivedDataLength) -> {
+            System.out.println("Read " + receivedDataLength + " bytes as '" + receivedData + "'");
         });
         System.out.println("isSendSuccessfull = " + send(serialPort, "test me out"));
         System.out.println("isDisconnectSuccessfull = " + disconnect(serialPort));
