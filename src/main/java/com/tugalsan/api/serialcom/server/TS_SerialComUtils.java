@@ -23,10 +23,19 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    private static SerialPort connectContinues(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
-        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-        serialPort.openPort();
-        serialPort.addDataListener(new SerialPortDataListener() {
+    public static boolean connect(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
+        boolean result;
+        result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+        if (!result) {
+            d.ce("connect", "Error on setComPortTimeouts");
+            return false;
+        }
+        result = serialPort.openPort();
+        if (!result) {
+            d.ce("connect", "Error on openPort");
+            return false;
+        }
+        result = serialPort.addDataListener(new SerialPortDataListener() {
             @Override
             public int getListeningEvents() {
                 return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
@@ -45,25 +54,28 @@ public class TS_SerialComUtils {
                 receivedData_Len.execute(new String(receivedData));
             }
         });
+        if (!result) {
+            d.ce("connect", "Error on addDataListener");
+            return false;
+        }
         TS_ThreadWait.seconds(null, 2);//WAIT NEEDED
-        return serialPort;
+        return true;
     }
 
     public static String name(SerialPort serialPort) {
         return serialPort.getDescriptivePortName();
     }
 
-    //TODO WRITE A BUILDER
-    public static SerialPort connect_9600_8_1_N(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
-        serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-        connectContinues(serialPort, receivedData_Len);
-        return serialPort;
+    public static boolean setup(SerialPort serialPort, int newBaudRate, int newDataBits, int newStopBits, int newParity) {
+        return serialPort.setComPortParameters(newBaudRate, newDataBits, newStopBits, newParity);
     }
 
+    //TODO WRITE A BUILDER
     public static void sendTest() {
         var serialPort = list()[0];
         d.cr("sendTest", "serialPort.name = " + name(serialPort));
-        connect_9600_8_1_N(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'"));
+        d.cr("sendTest", "setup.isSuccessfull = " + setup(serialPort, 9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY));
+        d.cr("sendTest", "connect.isSuccessfull = " + connect(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'")));
         d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
         d.cr("sendTest", "disconnect.isSuccessfull = " + disconnect(serialPort));
     }
