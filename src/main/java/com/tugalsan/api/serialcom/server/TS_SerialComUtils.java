@@ -18,7 +18,7 @@ public class TS_SerialComUtils {
         return SerialPort.getCommPorts();
     }
 
-    public static SerialPort connect(SerialPort serialPort) {
+    private static SerialPort connect(SerialPort serialPort) {
         serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
         serialPort.openPort();
@@ -26,10 +26,12 @@ public class TS_SerialComUtils {
     }
 
     public static boolean disconnect(SerialPort serialPort) {
+        serialPort.removeDataListener();
         return serialPort.closePort();
     }
 
     public static SerialPort on(SerialPort serialPort, TGS_ExecutableType2<String, Integer> receivedData_Len) {
+        connect(serialPort);
         serialPort.addDataListener(new SerialPortDataListener() {
             @Override
             public int getListeningEvents() {
@@ -50,12 +52,18 @@ public class TS_SerialComUtils {
         return serialPort;
     }
 
+    public static String name(SerialPort serialPort) {
+        return serialPort.getDescriptivePortName();
+    }
+
     public static void sendTest() {
-        var serialPort = on(connect(list()[0]), (receivedData, receivedDataLength) -> {
+        var serialPort = list()[0];
+        System.out.println("serialPort.name = " + name(serialPort));
+        on(serialPort, (receivedData, receivedDataLength) -> {
             System.out.println("Read " + receivedDataLength + " bytes as '" + receivedData + "'");
         });
-        System.out.println("isSendSuccessfull = " + send(serialPort, "test me out"));
-        System.out.println("isDisconnectSuccessfull = " + disconnect(serialPort));
+        System.out.println("send.isSuccessfull = " + send(serialPort, "test me out"));
+        System.out.println("disconnect.isSuccessfull = " + disconnect(serialPort));
     }
 
     /* arduino
