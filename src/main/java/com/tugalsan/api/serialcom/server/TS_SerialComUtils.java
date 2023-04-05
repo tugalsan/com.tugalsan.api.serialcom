@@ -3,38 +3,40 @@ package com.tugalsan.api.serialcom.server;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
+import com.tugalsan.api.executable.client.TGS_ExecutableType2;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
-import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 
 public class TS_SerialComUtils {
 
-    public static void receiveTest() {
-        var comPort = SerialPort.getCommPorts()[0];
-        comPort.setComPortParameters(115200, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-        comPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-        comPort.openPort();
-        TGS_UnSafe.execute(() -> {
-            while (true) {
-                while (comPort.bytesAvailable() == 0) {
-                    TS_ThreadWait.milliseconds(20);
-                }
-                var readBuffer = new byte[comPort.bytesAvailable()];
-                var numRead = comPort.readBytes(readBuffer, readBuffer.length);
-                System.out.println("Read " + numRead + " bytes.");
-                comPort.writeBytes(readBuffer, numRead);
-            }
-        }, e -> {
-            e.printStackTrace();
-        });
-        comPort.closePort();
+    private static boolean send(SerialPort serialPort, byte[] byteArray) {
+        return serialPort.writeBytes(byteArray, byteArray.length) != -1;
     }
 
-    public static void sendTest() {
-        var comPort = SerialPort.getCommPorts()[0];
-        comPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-        comPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-        comPort.openPort();
-        comPort.addDataListener(new SerialPortDataListener() {
+    private static boolean send(SerialPort serialPort, int min_128_plus127) {
+        return send(serialPort, new byte[]{(byte) min_128_plus127});
+    }
+
+    private static boolean send(SerialPort serialPort, byte byteOne) {
+        return send(serialPort, new byte[]{byteOne});
+    }
+
+    public static boolean send(SerialPort serialPort, String string) {
+        return send(serialPort, string.getBytes());
+    }
+
+    public static SerialPort[] list() {
+        return SerialPort.getCommPorts();
+    }
+
+    public static SerialPort connect(SerialPort serialPort) {
+        serialPort.setComPortParameters(9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+        serialPort.openPort();
+        return serialPort;
+    }
+
+    public static SerialPort on(SerialPort serialPort, TGS_ExecutableType2<String, Integer> receivedData_Len) {
+        serialPort.addDataListener(new SerialPortDataListener() {
             @Override
             public int getListeningEvents() {
                 return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
@@ -45,14 +47,19 @@ public class TS_SerialComUtils {
                 if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
                     return;
                 }
-                var newData = new byte[comPort.bytesAvailable()];
-                var numRead = comPort.readBytes(newData, newData.length);
-                System.out.println("Read " + numRead + " bytes. " + newData[0]);
+                var receivedData = new byte[serialPort.bytesAvailable()];
+                var receivedLen = serialPort.readBytes(receivedData, receivedData.length);
+                receivedData_Len.execute(new String(receivedData), receivedLen);
             }
         });
         TS_ThreadWait.seconds(null, 2);//WAIT NEEDED
-        var sendData = new byte[]{(byte) 0x53};
-        comPort.writeBytes(sendData, 1);
+        return serialPort;
+    }
+
+    public static void sendTest() {
+        send(on(connect(list()[0]), (receivedData, Len) -> {
+            System.out.println("Read " + Len + " bytes as '" + receivedData + "'");
+        }), "test me out");
     }
 
     /* arduino
