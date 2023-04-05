@@ -77,6 +77,7 @@ public class TS_SerialComUtils {
         d.cr("sendTest", "setup.isSuccessfull = " + setup(serialPort, 9600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY));
         d.cr("sendTest", "connect.isSuccessfull = " + connect(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'")));
         d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
+        TS_ThreadWait.seconds(null, 2);//FOR ARDUINO
         d.cr("sendTest", "disconnect.isSuccessfull = " + disconnect(serialPort));
     }
 
