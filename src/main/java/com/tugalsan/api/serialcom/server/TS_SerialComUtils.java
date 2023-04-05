@@ -30,7 +30,7 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    public static SerialPort on(SerialPort serialPort, TGS_ExecutableType2<String, Integer> receivedData_Len) {
+    public static SerialPort on(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
         connect(serialPort);
         serialPort.addDataListener(new SerialPortDataListener() {
             @Override
@@ -45,7 +45,10 @@ public class TS_SerialComUtils {
                 }
                 var receivedData = new byte[serialPort.bytesAvailable()];
                 var receivedLen = serialPort.readBytes(receivedData, receivedData.length);
-                receivedData_Len.execute(new String(receivedData), receivedLen);
+                if (receivedLen == -1) {
+                    receivedData_Len.execute("");
+                }
+                receivedData_Len.execute(new String(receivedData));
             }
         });
         TS_ThreadWait.seconds(null, 2);//WAIT NEEDED
@@ -59,8 +62,8 @@ public class TS_SerialComUtils {
     public static void sendTest() {
         var serialPort = list()[0];
         System.out.println("serialPort.name = " + name(serialPort));
-        on(serialPort, (receivedData, receivedDataLength) -> {
-            System.out.println("Read " + receivedDataLength + " bytes as '" + receivedData + "'");
+        on(serialPort, receivedData -> {
+            System.out.println("Read as '" + receivedData + "'");
         });
         System.out.println("send.isSuccessfull = " + send(serialPort, "test me out"));
         System.out.println("disconnect.isSuccessfull = " + disconnect(serialPort));
