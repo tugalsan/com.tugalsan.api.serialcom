@@ -2,9 +2,12 @@ package com.tugalsan.api.serialcom.server;
 
 import com.fazecast.jSerialComm.*;
 import com.tugalsan.api.executable.client.*;
+import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.*;
 
 public class TS_SerialComUtils {
+
+    final private static TS_Log d = TS_Log.of(TS_SerialComUtils.class);
 
     private static boolean send(SerialPort serialPort, byte[] byteArray) {
         return serialPort.writeBytes(byteArray, byteArray.length) != -1;
@@ -61,10 +64,10 @@ public class TS_SerialComUtils {
 
     public static void sendTest() {
         var serialPort = list()[0];
-        System.out.println("serialPort.name = " + name(serialPort));
-        on(serialPort, receivedData -> System.out.println("Read as '" + receivedData + "'"));
-        System.out.println("send.isSuccessfull = " + send(serialPort, "test me out"));
-        System.out.println("disconnect.isSuccessfull = " + disconnect(serialPort));
+        d.cr("serialPort.name = " + name(serialPort));
+        on(serialPort, receivedData -> d.cr("Read as '" + receivedData + "'"));
+        d.cr("send.isSuccessfull = " + send(serialPort, "test me out"));
+        d.cr("disconnect.isSuccessfull = " + disconnect(serialPort));
     }
 
     /* arduino
