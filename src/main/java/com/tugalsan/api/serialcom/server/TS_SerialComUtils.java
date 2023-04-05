@@ -54,8 +54,8 @@ public class TS_SerialComUtils {
         var serialPort = on(connect(list()[0]), (receivedData, Len) -> {
             System.out.println("Read " + Len + " bytes as '" + receivedData + "'");
         });
-        var isSendSuccessfull = send(serialPort, "test me out");
-        var isDisconnectSuccessfull = disconnect(serialPort);
+        System.out.println("isSendSuccessfull = " + send(serialPort, "test me out"));
+        System.out.println("isDisconnectSuccessfull = " + disconnect(serialPort));
     }
 
     /* arduino
