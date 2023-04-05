@@ -1,23 +1,13 @@
 package com.tugalsan.api.serialcom.server;
 
-import com.fazecast.jSerialComm.SerialPort;
-import com.fazecast.jSerialComm.SerialPortDataListener;
-import com.fazecast.jSerialComm.SerialPortEvent;
-import com.tugalsan.api.executable.client.TGS_ExecutableType2;
-import com.tugalsan.api.thread.server.TS_ThreadWait;
+import com.fazecast.jSerialComm.*;
+import com.tugalsan.api.executable.client.*;
+import com.tugalsan.api.thread.server.*;
 
 public class TS_SerialComUtils {
 
     private static boolean send(SerialPort serialPort, byte[] byteArray) {
         return serialPort.writeBytes(byteArray, byteArray.length) != -1;
-    }
-
-    private static boolean send(SerialPort serialPort, int min_128_plus127) {
-        return send(serialPort, new byte[]{(byte) min_128_plus127});
-    }
-
-    private static boolean send(SerialPort serialPort, byte byteOne) {
-        return send(serialPort, new byte[]{byteOne});
     }
 
     public static boolean send(SerialPort serialPort, String string) {
