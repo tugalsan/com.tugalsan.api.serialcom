@@ -25,6 +25,10 @@ public class TS_SerialComUtils {
         return serialPort;
     }
 
+    public static boolean disconnect(SerialPort serialPort) {
+        return serialPort.closePort();
+    }
+
     public static SerialPort on(SerialPort serialPort, TGS_ExecutableType2<String, Integer> receivedData_Len) {
         serialPort.addDataListener(new SerialPortDataListener() {
             @Override
@@ -47,9 +51,11 @@ public class TS_SerialComUtils {
     }
 
     public static void sendTest() {
-        send(on(connect(list()[0]), (receivedData, Len) -> {
+        var serialPort = on(connect(list()[0]), (receivedData, Len) -> {
             System.out.println("Read " + Len + " bytes as '" + receivedData + "'");
-        }), "test me out");
+        });
+        var isSendSuccessfull = send(serialPort, "test me out");
+        var isDisconnectSuccessfull = disconnect(serialPort);
     }
 
     /* arduino
