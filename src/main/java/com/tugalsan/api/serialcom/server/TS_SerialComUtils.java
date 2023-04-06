@@ -39,7 +39,7 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    public static TS_ThreadExecutable connectUsingNonBlocking(SerialPort serialPort, TGS_ExecutableType1<String> receivedString) {
+    public static TS_ThreadExecutable connectUsingNonBlocking(SerialPort serialPort, TGS_ExecutableType1<String> receivedNextCommand) {
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         serialPort.openPort();
         var killableThread = new TS_ThreadExecutable() {
@@ -57,33 +57,32 @@ public class TS_SerialComUtils {
                 if (killMe) {
                     return;
                 }
-                var receivedBytes = new byte[serialPort.bytesAvailable()];
-                var receivedLen = serialPort.readBytes(receivedBytes, receivedBytes.length);
-                if (receivedLen == -1) {
+                var bytes = new byte[serialPort.bytesAvailable()];
+                var length = serialPort.readBytes(bytes, bytes.length);
+                if (length == -1) {
                     return;
                 }
-                sb.append(new String(receivedBytes));
+                buffer.append(new String(bytes));
             }
-            StringBuffer sb = new StringBuffer();
 
             private void processBuffer() {
                 if (killMe) {
                     return;
                 }
                 //IS THERE ANY CMD?
-                var idx = sb.indexOf("\n");
+                var idx = buffer.indexOf("\n");
                 if (idx == -1) {
                     return;
                 }
                 //PROCESS FIRST CMD
-                var cmd = sb.substring(0, idx).replace("\r", "");
-                receivedString.execute(cmd);
+                var firstCommand = buffer.substring(0, idx).replace("\r", "");
+                receivedNextCommand.execute(firstCommand);
                 //REMOVE FIRST CMD FROM BUFFER
-                var leftOver = sb.length() == idx + 1
+                var leftOver = buffer.length() == idx + 1
                         ? ""
-                        : sb.substring(idx + 1, sb.length());
-                sb.setLength(0);
-                sb.append(leftOver);
+                        : buffer.substring(idx + 1, buffer.length());
+                buffer.setLength(0);
+                buffer.append(leftOver);
                 //PROCESS LEFT OVER CMDS
                 processBuffer();
             }
@@ -105,6 +104,7 @@ public class TS_SerialComUtils {
                     }, e -> handleError(e));
                 }
             }
+            final private StringBuilder buffer = new StringBuilder();
         };
         TS_ThreadRun.now(killableThread.setName(d.className + ".connectUsingNonBlocking"));
         return killableThread;
@@ -140,12 +140,33 @@ public class TS_SerialComUtils {
 
     public static void test() {
         var serialPort = list()[0];
-        d.cr("test", "serialPort.name = " + TS_SerialComUtils.name(serialPort));
-        d.cr("test", "setup.isSuccessfull = " + TS_SerialComUtils.setup(serialPort, 115200, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY));
-        d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connectUsingNonBlocking(serialPort, receivedData -> d.cr("test", "receivedData", receivedData)));
-        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(serialPort, "hello"));
-        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(serialPort, "dosomething"));
-        d.cr("test", "disconnect.isSuccessfull = " + TS_SerialComUtils.disconnect(serialPort));
+        d.cr("test", "serialPort.name = " + TS_SerialComUtils.name(
+                serialPort
+        ));
+        d.cr("test", "setup.isSuccessfull = " + TS_SerialComUtils.setup(
+                serialPort,
+                115200,
+                8,
+                SerialPort.ONE_STOP_BIT,
+                SerialPort.NO_PARITY
+        ));
+        d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connectUsingNonBlocking(
+                serialPort,
+                receivedNextCommand -> {
+                    d.cr("test", "receivedNextCommand", receivedNextCommand);
+                }
+        ));
+        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
+                serialPort,
+                "hello"
+        ));
+        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
+                serialPort,
+                "dosomething"
+        ));
+        d.cr("test", "disconnect.isSuccessfull = " + TS_SerialComUtils.disconnect(
+                serialPort
+        ));
     }
 
     /* 
