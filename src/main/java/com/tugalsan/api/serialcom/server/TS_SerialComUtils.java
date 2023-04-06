@@ -138,7 +138,6 @@ public class TS_SerialComUtils {
         return true;
     }
 
-    @Deprecated //TODO TESTED
     public static void test() {
         var serialPort = list()[0];
         d.cr("test", "serialPort.name = " + TS_SerialComUtils.name(serialPort));
