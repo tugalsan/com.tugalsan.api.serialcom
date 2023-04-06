@@ -9,4 +9,5 @@ module com.tugalsan.api.serialcom {
     requires com.tugalsan.api.coronator;
     requires com.tugalsan.api.unsafe;
     exports com.tugalsan.api.serialcom.server;
+    exports com.tugalsan.api.serialcom.server.test;
 }
