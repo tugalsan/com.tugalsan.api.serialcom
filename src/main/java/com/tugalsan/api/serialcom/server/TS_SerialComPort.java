@@ -7,7 +7,7 @@ public class TS_SerialComPort {
     private TS_SerialComPort(SerialPort serialPort) {
         this.serialPort = serialPort;
     }
-    final public SerialPort serialPort;
+    final protected SerialPort serialPort;
 
     public static TS_SerialComPort of(SerialPort serialPort) {
         return new TS_SerialComPort(serialPort);

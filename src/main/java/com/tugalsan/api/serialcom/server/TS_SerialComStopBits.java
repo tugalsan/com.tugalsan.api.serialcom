@@ -10,8 +10,8 @@ public class TS_SerialComStopBits {
         this.dataBits = dataBits;
         this.stopBits = stopBits;
     }
-    final public TS_SerialComDataBits dataBits;
-    final public STOP_BITS stopBits;
+    final protected TS_SerialComDataBits dataBits;
+    final protected STOP_BITS stopBits;
 
     public static TS_SerialComStopBits of(TS_SerialComDataBits dataBits, STOP_BITS stopBits) {
         return new TS_SerialComStopBits(dataBits, stopBits);

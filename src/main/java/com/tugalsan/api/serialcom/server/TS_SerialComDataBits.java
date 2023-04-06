@@ -6,8 +6,8 @@ public class TS_SerialComDataBits {
         this.baudRate = baudRate;
         this.dataBits = dataBits;
     }
-    final public TS_SerialComBaudRate baudRate;
-    final public int dataBits;
+    final protected TS_SerialComBaudRate baudRate;
+    final protected int dataBits;
 
     public static TS_SerialComDataBits of(TS_SerialComBaudRate baudRate, int dataBits) {
         return new TS_SerialComDataBits(baudRate, dataBits);

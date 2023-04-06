@@ -6,8 +6,8 @@ public class TS_SerialComBaudRate {
         this.port = port;
         this.baudRate = baudRate;
     }
-    final public TS_SerialComPort port;
-    final public int baudRate;
+    final protected TS_SerialComPort port;
+    final protected int baudRate;
 
     public static TS_SerialComBaudRate of(TS_SerialComPort port, int baudRate) {
         return new TS_SerialComBaudRate(port, baudRate);

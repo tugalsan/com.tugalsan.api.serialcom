@@ -8,8 +8,8 @@ public class TS_SerialComOnReceived {
         this.parity = parity;
         this.command = command;
     }
-    final public TS_SerialComParity parity;
-    final public TGS_ExecutableType1<String> command;
+    final protected TS_SerialComParity parity;
+    final protected TGS_ExecutableType1<String> command;
 
     public static TS_SerialComOnReceived of(TS_SerialComParity parity, TGS_ExecutableType1<String> command) {
         return new TS_SerialComOnReceived(parity, command);

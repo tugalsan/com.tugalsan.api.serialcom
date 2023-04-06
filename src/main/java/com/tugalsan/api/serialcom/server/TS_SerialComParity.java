@@ -12,8 +12,8 @@ public class TS_SerialComParity {
         this.stopBits = stopBits;
         this.parity = parity;
     }
-    final public TS_SerialComStopBits stopBits;
-    final public PARITY parity;
+    final protected TS_SerialComStopBits stopBits;
+    final protected PARITY parity;
 
     public static TS_SerialComParity of(TS_SerialComStopBits stopBits, PARITY parity) {
         return new TS_SerialComParity(stopBits, parity);
