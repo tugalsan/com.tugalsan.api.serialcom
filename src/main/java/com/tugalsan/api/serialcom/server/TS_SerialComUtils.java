@@ -76,7 +76,7 @@ public class TS_SerialComUtils {
                     return;
                 }
                 //PROCESS FIRST CMD
-                var cmd = sb.substring(0, idx);
+                var cmd = sb.substring(0, idx).replace("\r", "");
                 receivedString.execute(cmd);
                 //REMOVE FIRST CMD FROM BUFFER
                 var leftOver = sb.length() == idx + 1
