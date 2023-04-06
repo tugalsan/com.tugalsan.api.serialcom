@@ -45,7 +45,7 @@ public class TS_SerialComUtils {
         var killableThread = new TS_ThreadExecutable() {
 
             private void waitForNewData() {
-                while (serialPort.bytesAvailable() == 0) {
+                while (serialPort.bytesAvailable() == 0 || serialPort.bytesAvailable() == -1) {
                     if (killMe) {
                         return;
                     }
@@ -62,7 +62,11 @@ public class TS_SerialComUtils {
                 if (length == -1) {
                     return;
                 }
-                buffer.append(new String(bytes));
+                var string = new String(bytes);
+                if (string.isEmpty()) {
+                    return;
+                }
+                buffer.append(string);
             }
 
             private void processBuffer() {
@@ -139,6 +143,11 @@ public class TS_SerialComUtils {
     }
 
     public static void test() {
+        var serialPortList = list();
+        if (serialPortList.length == 0) {
+            d.cr("test", "No serial port detected");
+            return;
+        }
         var serialPort = list()[0];
         d.cr("test", "serialPort.name = " + TS_SerialComUtils.name(
                 serialPort
