@@ -39,7 +39,7 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    public static TS_ThreadExecutable connectUsingNonBlocking(SerialPort serialPort, TGS_ExecutableType1<String> receivedNextCommand) {
+    public static TS_ThreadExecutable connect(SerialPort serialPort, TGS_ExecutableType1<String> receivedNextCommand) {
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         serialPort.openPort();
         var killableThread = new TS_ThreadExecutable() {
@@ -106,7 +106,7 @@ public class TS_SerialComUtils {
             }
             final private StringBuilder buffer = new StringBuilder();
         };
-        TS_ThreadRun.now(killableThread.setName(d.className + ".connectUsingNonBlocking"));
+        TS_ThreadRun.now(killableThread.setName(d.className + ".connect"));
         return killableThread;
     }
 
@@ -150,7 +150,7 @@ public class TS_SerialComUtils {
                 SerialPort.ONE_STOP_BIT,
                 SerialPort.NO_PARITY
         ));
-        d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connectUsingNonBlocking(
+        d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connect(
                 serialPort,
                 receivedNextCommand -> {
                     d.cr("test", "receivedNextCommand", receivedNextCommand);
