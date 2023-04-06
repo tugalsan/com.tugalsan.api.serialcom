@@ -14,6 +14,10 @@ public class TS_SerialComTestBuilder {
                 .onReceived(command -> d.cr("onReceived", command))
                 .connect()
                 .useAndDisconnect(con -> {
+                    d.cr("con.success_portConnect()", con.success_portConnect());
+                    d.cr("con.success_portPresent()", con.success_portPresent());
+                    d.cr("con.success_portSetup()", con.success_portSetup());
+                    d.cr("con.isConnected()", con.isConnected());
                     con.send("hello");
                     con.send("naber?");
                 });

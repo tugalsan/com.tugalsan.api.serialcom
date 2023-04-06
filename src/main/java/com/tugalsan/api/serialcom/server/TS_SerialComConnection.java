@@ -91,6 +91,7 @@ public class TS_SerialComConnection {
         if (isConnected()) {
             con.execute(this);
             disconnect();
+            return true;
         }
         d.ce("useAndDisconnect", "Error on not connected");
         return false;
