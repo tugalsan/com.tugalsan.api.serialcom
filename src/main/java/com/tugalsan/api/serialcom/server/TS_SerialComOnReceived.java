@@ -18,4 +18,8 @@ public class TS_SerialComOnReceived {
     public TS_SerialComConnection connect() {
         return TS_SerialComConnection.of(this);
     }
+
+    public boolean use(TGS_ExecutableType1<TS_SerialComConnection> con) {
+        return connect().useAndDisconnect(con);
+    }
 }

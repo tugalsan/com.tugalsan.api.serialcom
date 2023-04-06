@@ -9,11 +9,9 @@ public class TS_SerialComTestBuilder {
 
     public static void test() {
         TS_SerialComBuilder.portFirst()
-                .baudRate_115200().dataBits_8()
-                .oneStopBit().parityNone()
+                .baudRate_115200().dataBits_8().oneStopBit().parityNone()
                 .onReceived(command -> d.cr("onReceived", command))
-                .connect()
-                .useAndDisconnect(con -> {
+                .use(con -> {
                     d.cr("con.success_portConnect()", con.success_portConnect());
                     d.cr("con.success_portPresent()", con.success_portPresent());
                     d.cr("con.success_portSetup()", con.success_portSetup());
