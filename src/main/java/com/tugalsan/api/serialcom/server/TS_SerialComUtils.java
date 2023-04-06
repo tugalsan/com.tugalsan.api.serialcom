@@ -4,6 +4,7 @@ import com.fazecast.jSerialComm.*;
 import com.tugalsan.api.executable.client.*;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.*;
+import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 
 public class TS_SerialComUtils {
 
@@ -26,49 +27,87 @@ public class TS_SerialComUtils {
     }
 
     public static boolean disconnect(SerialPort serialPort) {
+        return disconnect(serialPort, null);
+    }
+
+    public static boolean disconnect(SerialPort serialPort, TS_ThreadExecutable receiveThread) {
+        if (receiveThread != null) {
+            receiveThread.killMe = true;
+        }
         serialPort.removeDataListener();
         TS_ThreadWait.seconds(null, 2);//FOR ARDUINO
         return serialPort.closePort();
     }
 
-    public static boolean connect(SerialPort serialPort, TGS_ExecutableType1<String> receivedData_Len) {
-        boolean result;
-        result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-        if (!result) {
-            d.ce("connect", "Error on setComPortTimeouts");
-            return false;
-        }
-        result = serialPort.openPort();
-        if (!result) {
-            d.ce("connect", "Error on openPort");
-            return false;
-        }
-        result = serialPort.addDataListener(new SerialPortDataListener() {
-            @Override
-            public int getListeningEvents() {
-                return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
+    public static TS_ThreadExecutable connectUsingNonBlocking(SerialPort serialPort, TGS_ExecutableType1<String> receivedString) {
+        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
+        serialPort.openPort();
+        var killableThread = new TS_ThreadExecutable() {
+
+            private void waitForNewData() {
+                while (serialPort.bytesAvailable() == 0) {
+                    if (killMe) {
+                        return;
+                    }
+                    TS_ThreadWait.milliseconds(20);
+                }
+            }
+
+            private void appendToBuffer() {
+                if (killMe) {
+                    return;
+                }
+                var receivedBytes = new byte[serialPort.bytesAvailable()];
+                var receivedLen = serialPort.readBytes(receivedBytes, receivedBytes.length);
+                if (receivedLen == -1) {
+                    return;
+                }
+                sb.append(new String(receivedBytes));
+            }
+            StringBuffer sb = new StringBuffer();
+
+            private void processBuffer() {
+                if (killMe) {
+                    return;
+                }
+                //IS THERE ANY CMD?
+                var idx = sb.indexOf("\n");
+                if (idx == -1) {
+                    return;
+                }
+                //PROCESS FIRST CMD
+                var cmd = sb.substring(0, idx);
+                receivedString.execute(cmd);
+                //REMOVE FIRST CMD FROM BUFFER
+                var leftOver = sb.length() == idx + 1
+                        ? ""
+                        : sb.substring(idx + 1, sb.length());
+                sb.setLength(0);
+                sb.append(leftOver);
+                //PROCESS LEFT OVER CMDS
+                processBuffer();
+            }
+
+            private void handleError(Exception e) {
+                if (killMe) {
+                    return;
+                }
+                e.printStackTrace();
             }
 
             @Override
-            public void serialEvent(SerialPortEvent event) {
-                if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
-                    d.ce("connect", "SerialPortDataListener", "serialEvent", "skip.event.getEventType", event.getEventType());
-                    return;
+            public void execute() {
+                while (!killMe) {
+                    TGS_UnSafe.execute(() -> {
+                        waitForNewData();
+                        appendToBuffer();
+                        processBuffer();
+                    }, e -> handleError(e));
                 }
-                var receivedData = new byte[serialPort.bytesAvailable()];
-                var receivedLen = serialPort.readBytes(receivedData, receivedData.length);
-                if (receivedLen == -1) {
-                    receivedData_Len.execute("");
-                }
-                receivedData_Len.execute(new String(receivedData));
             }
-        });
-        if (!result) {
-            d.ce("connect", "Error on addDataListener");
-            return false;
-        }
-        TS_ThreadWait.seconds(null, 2);//WAIT NEEDED
-        return true;
+        };
+        TS_ThreadRun.now(killableThread.setName(d.className + ".connectUsingNonBlocking"));
+        return killableThread;
     }
 
     public static String name(SerialPort serialPort) {
@@ -99,46 +138,128 @@ public class TS_SerialComUtils {
         return true;
     }
 
-    //TODO WRITE A BUILDER
-    public static void sendTest() {
+    @Deprecated //TODO TESTED
+    public static void test() {
         var serialPort = list()[0];
-        d.cr("sendTest", "serialPort.name = " + name(serialPort));
-        d.cr("sendTest", "setup.isSuccessfull = " + setup(serialPort, 115200, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY));
-        d.cr("sendTest", "connect.isSuccessfull = " + connect(serialPort, receivedData -> d.cr("sendTest", "Read as '" + receivedData + "'")));
-        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
-        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
-        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
-        d.cr("sendTest", "send.isSuccessfull = " + send(serialPort, "test me out"));
-        d.cr("sendTest", "disconnect.isSuccessfull = " + disconnect(serialPort));
+        d.cr("test", "serialPort.name = " + TS_SerialComUtils.name(serialPort));
+        d.cr("test", "setup.isSuccessfull = " + TS_SerialComUtils.setup(serialPort, 115200, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY));
+        d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connectUsingNonBlocking(serialPort, receivedData -> d.cr("test", "receivedData", receivedData)));
+        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(serialPort, "hello"));
+        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(serialPort, "dosomething"));
+        d.cr("test", "disconnect.isSuccessfull = " + TS_SerialComUtils.disconnect(serialPort));
     }
 
-    /* arduino
-int inByte = 0;         // incoming serial byte
+    /* 
+    //ARDUINO CODE
+    //KC868_A32 NodeMCU
 
-void setup() {
-  // start serial port at 9600 bps:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
+    //PIN-INIT
+    #include "PCF8574.h"
+    TwoWire I2Cone = TwoWire(0);
+    TwoWire I2Ctwo = TwoWire(1);
+    PCF8574 pcf8574_R1(&I2Ctwo, 0x24, 15, 13);
+    PCF8574 pcf8574_R2(&I2Ctwo, 0x25, 15, 13);
+    PCF8574 pcf8574_R3(&I2Ctwo, 0x21, 15, 13);
+    PCF8574 pcf8574_R4(&I2Ctwo, 0x22, 15, 13);
+    PCF8574 pcf8574_I1(&I2Cone, 0x24, 4, 5);
+    PCF8574 pcf8574_I2(&I2Cone, 0x25, 4, 5);
+    PCF8574 pcf8574_I3(&I2Cone, 0x21, 4, 5);
+    PCF8574 pcf8574_I4(&I2Cone, 0x22, 4, 5);
 
-  establishContact();  // send a byte to establish contact until receiver responds
-}
+    //TIME-INIT
+    unsigned long currentTime = millis();  // Current time
+    unsigned long previousTime = 0;        // Previous time
+    const long timeoutTime = 2000;         // Define timeout time in milliseconds (example: 2000ms = 2s)
 
-void loop() {
-  // if we get a valid byte, read analog ins:
-  if (Serial.available() > 0) {
-    // get incoming byte:
-    inByte = Serial.read();
-    Serial.print('B');
-  }
-}
+    //SERIAL-INIT
+    int ms_serialWaitUntillConnection = 3000;  //0 for forever, default 3000
+    #define serialbufferSize 50
+    char serial_lineFound_buffer[serialbufferSize];
+    int serial_lineFound_index = 0;
 
-void establishContact() {
-  while (Serial.available() <= 0) {
-    Serial.print('A');   // send a capital A
-    delay(300);
-  }
-}
+    //FLAGS-INIT
+    int flag_read_di = 0;
+
+    //MAIN-INIT
+    void setup() {
+      //MAIN-INIT-PIN
+      for (int i = 0; i <= 7; i++) {
+        pcf8574_I1.pinMode(i, INPUT);
+        pcf8574_I2.pinMode(i, INPUT);
+        pcf8574_I3.pinMode(i, INPUT);
+        pcf8574_I4.pinMode(i, INPUT);
+        pcf8574_R1.pinMode(i, OUTPUT);
+        pcf8574_R2.pinMode(i, OUTPUT);
+        pcf8574_R3.pinMode(i, OUTPUT);
+        pcf8574_R4.pinMode(i, OUTPUT);
+      }
+      pcf8574_I1.begin();
+      pcf8574_I2.begin();
+      pcf8574_I3.begin();
+      pcf8574_I4.begin();
+      pcf8574_R1.begin();
+      pcf8574_R2.begin();
+      pcf8574_R3.begin();
+      pcf8574_R4.begin();
+      for (int i = 0; i <= 7; i++) {
+        pcf8574_R1.digitalWrite(i, HIGH);
+        pcf8574_R2.digitalWrite(i, HIGH);
+        pcf8574_R3.digitalWrite(i, HIGH);
+        pcf8574_R4.digitalWrite(i, HIGH);
+      }
+
+      //MAIN-INIT-SERIAL
+      Serial.begin(115200);
+      if (ms_serialWaitUntillConnection == 0) {
+        while (!Serial)
+          ;
+      } else {
+        while (!Serial && (millis() < ms_serialWaitUntillConnection))
+          ;
+      }
+
+      //MAIN-INIT-CARDINFO
+      Serial.print("Starting WebServer on ");
+      Serial.print(String(ARDUINO_BOARD));
+      Serial.print("\n");
+
+      //MAIN-INIT-PRINT-INTERFACE
+      Serial.println("type hello");
+      Serial.println();
+    }
+
+    //LOOP
+    void loop() {
+      //LOOP-HANDLE SERIAL COMMANDS
+      if (serial_lineFound()) serial_lineProcess(serial_lineFound_buffer);
+    }
+
+    //SERIAL-LINE FINDER
+    boolean serial_lineFound() {
+      boolean lineFound = false;
+      while (Serial.available() > 0) {
+        char charBuffer = Serial.read();
+        if (charBuffer == '\n') {//command received fully
+          serial_lineFound_buffer[serial_lineFound_index] = 0;
+          lineFound = (serial_lineFound_index > 0);
+          serial_lineFound_index = 0;
+        } else if (charBuffer == '\r') {//ignore
+        } else if (serial_lineFound_index < serialbufferSize && lineFound == false) {//buffer up char
+          serial_lineFound_buffer[serial_lineFound_index++] = charBuffer;
+        }
+      }
+      return lineFound;
+    }
+
+    //SERIAL-LINE PROCESSOR
+    void serial_lineProcess(char* commandBuffer) {
+      if (strstr(commandBuffer, "hello")) {
+        Serial.println("hello2u2");
+      } else {
+        Serial.print("I dont understand you. You said: ");
+        Serial.println(commandBuffer);
+      }
+    }
+
      */
 }
