@@ -2,6 +2,8 @@ package com.tugalsan.api.serialcom.server.test;
 
 import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.serialcom.server.utils.*;
+import com.tugalsan.api.thread.server.TS_ThreadWait;
+import java.util.stream.IntStream;
 
 public class TS_SerialComTestUtils {
 
@@ -28,14 +30,17 @@ public class TS_SerialComTestUtils {
                     d.cr("test", "receivedNextCommand", receivedNextCommand);
                 }
         ));
-        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                serialPort,
-                "hello"
-        ));
-        d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                serialPort,
-                "dosomething"
-        ));
+        IntStream.range(0, 5).forEach(i -> {
+            d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
+                    serialPort,
+                    "hello"
+            ));
+            d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
+                    serialPort,
+                    "dosomething"
+            ));
+            TS_ThreadWait.seconds(null, 1);
+        });
         d.cr("test", "disconnect.isSuccessfull = " + TS_SerialComUtils.disconnect(
                 serialPort
         ));

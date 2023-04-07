@@ -2,6 +2,9 @@ package com.tugalsan.api.serialcom.server.test;
 
 import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.serialcom.server.*;
+import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils;
+import com.tugalsan.api.thread.server.TS_ThreadWait;
+import java.util.stream.IntStream;
 
 public class TS_SerialComTestBuilder {
 
@@ -17,8 +20,11 @@ public class TS_SerialComTestBuilder {
                     d.cr("con.success_portPresent()", con.success_portPresent());
                     d.cr("con.success_portSetup()", con.success_portSetup());
                     d.cr("con.isConnected()", con.isConnected());
-                    d.cr("send.successful?", con.send("hello"));
-                    d.cr("send.successful?", con.send("naber?"));
+                    IntStream.range(0, 5).forEach(i -> {
+                        d.cr("send.successful?", con.send("hello"));
+                        d.cr("send.successful?", con.send("naber?"));
+                        TS_ThreadWait.seconds(null, 1);
+                    });
                 });
     }
 }
