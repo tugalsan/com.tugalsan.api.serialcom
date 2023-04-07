@@ -33,13 +33,13 @@ public class TS_SerialComConnection {
 
     private TS_SerialComConnection(TS_SerialComOnReply onReply) {
         this.onReply = onReply.onReply;
-        var parity = onReply.onError.parity.parity;
+        var parity = onReply.onConnectionError.parity.parity;
         this.parityName = parity == null ? null : parity.name();
-        var stopBits = onReply.onError.parity.stopBits.stopBits;
+        var stopBits = onReply.onConnectionError.parity.stopBits.stopBits;
         this.stopBitsName = stopBits == null ? null : stopBits.name();
-        this.dataBits = onReply.onError.parity.stopBits.dataBits.dataBits;
-        this.baudRate = onReply.onError.parity.stopBits.dataBits.baudRate.baudRate;
-        this.port = onReply.onError.parity.stopBits.dataBits.baudRate.port.serialPort;
+        this.dataBits = onReply.onConnectionError.parity.stopBits.dataBits.dataBits;
+        this.baudRate = onReply.onConnectionError.parity.stopBits.dataBits.baudRate.baudRate;
+        this.port = onReply.onConnectionError.parity.stopBits.dataBits.baudRate.port.serialPort;
         if (!successfulPort()) {
             return;
         }
@@ -49,7 +49,7 @@ public class TS_SerialComConnection {
         }
         this.threadReply = TS_SerialComUtils.connect(port, this.onReply);
         if (!isConnected()) {
-            onReply.onError.successfulPort_successfulSetup_successfulConnect.execute(successfulPort(), successfulSetup(), successfulConnect());
+            onReply.onConnectionError.successfulPort_successfulSetup_successfulConnect.execute(successfulPort(), successfulSetup(), successfulConnect());
         }
     }
     private TS_ThreadExecutable threadReply;

@@ -16,7 +16,7 @@ public class TS_SerialComParity {
         return new TS_SerialComParity(stopBits, parity);
     }
 
-    public TS_SerialComOnError onError(TGS_ExecutableType3<Boolean, Boolean, Boolean> successfulPort_successfulSetup_successfulConnect) {
-        return TS_SerialComOnError.of(this, successfulPort_successfulSetup_successfulConnect);
+    public TS_SerialComOnConnectionError onError(TGS_ExecutableType3<Boolean, Boolean, Boolean> successfulPort_successfulSetup_successfulConnect) {
+        return TS_SerialComOnConnectionError.of(this, successfulPort_successfulSetup_successfulConnect);
     }
 }

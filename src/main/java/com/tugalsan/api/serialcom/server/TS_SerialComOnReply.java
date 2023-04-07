@@ -4,15 +4,15 @@ import com.tugalsan.api.executable.client.TGS_ExecutableType1;
 
 public class TS_SerialComOnReply {
 
-    private TS_SerialComOnReply(TS_SerialComOnError onError, TGS_ExecutableType1<String> reply) {
-        this.onError = onError;
+    private TS_SerialComOnReply(TS_SerialComOnConnectionError onConnectionError, TGS_ExecutableType1<String> reply) {
+        this.onConnectionError = onConnectionError;
         this.onReply = reply;
     }
-    final protected TS_SerialComOnError onError;
+    final protected TS_SerialComOnConnectionError onConnectionError;
     final protected TGS_ExecutableType1<String> onReply;
 
-    public static TS_SerialComOnReply of(TS_SerialComOnError onError, TGS_ExecutableType1<String> reply) {
-        return new TS_SerialComOnReply(onError, reply);
+    public static TS_SerialComOnReply of(TS_SerialComOnConnectionError onConnectionError, TGS_ExecutableType1<String> reply) {
+        return new TS_SerialComOnReply(onConnectionError, reply);
     }
 
     @Deprecated //DO NOT FORGET TO DISCONNECT!
