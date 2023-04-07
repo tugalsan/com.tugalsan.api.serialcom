@@ -20,7 +20,7 @@ public class TS_SerialComTestJavaCode {
                     d.ce("onError", "successfulConnect", successfulConnect);
                 })
                 .onReply(reply -> d.cr("onReply", reply))
-                .onSucess_useAndDisconnect(con -> {
+                .onSucess_useAndDisconnect_the_(con -> {
                     d.cr("con.name()", con.name());
                     IntStream.range(0, 5).forEach(i -> {
                         d.cr("send.successful?", con.send("hello"));
