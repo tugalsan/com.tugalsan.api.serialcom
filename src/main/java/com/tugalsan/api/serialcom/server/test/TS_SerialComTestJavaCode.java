@@ -17,9 +17,9 @@ public class TS_SerialComTestJavaCode {
                 .onReply(reply -> d.cr("onReply", reply))
                 .use(con -> {
                     d.cr("con.name()", con.name());
-                    d.cr("con.success_portConnect()", con.success_portConnect());
                     d.cr("con.success_portPresent()", con.success_portPresent());
                     d.cr("con.success_portSetup()", con.success_portSetup());
+                    d.cr("con.success_portConnect()", con.success_portConnect());
                     d.cr("con.isConnected()", con.isConnected());
                     IntStream.range(0, 5).forEach(i -> {
                         d.cr("send.successful?", con.send("hello"));
