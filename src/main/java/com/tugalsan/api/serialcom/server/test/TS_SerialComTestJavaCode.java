@@ -13,15 +13,14 @@ public class TS_SerialComTestJavaCode {
         d.cr("testBuilder", "------------------------------------------");
         TS_SerialComBuilder.portFirst()
                 .baudRate_115200().dataBits_8().oneStopBit().parityNone()
+                .onError((successfulPort, successfulSetup, successfulConnect) -> {
+                    d.ce("onError", "successfulPort", successfulPort);
+                    d.ce("onError", "successfulSetup", successfulSetup);
+                    d.ce("onError", "successfulConnect", successfulConnect);
+                })
                 .onReply(reply -> d.cr("onReply", reply))
-                .use(con -> {
+                .onSucessUseAndDisconnect(con -> {
                     d.cr("con.name()", con.name());
-                    if (!con.isConnected()) {
-                        d.ce("con.success_portPresent()", con.success_portPresent());
-                        d.ce("con.success_portSetup()", con.success_portSetup());
-                        d.ce("con.success_portConnect()", con.success_portConnect());
-                        return;
-                    }
                     IntStream.range(0, 5).forEach(i -> {
                         d.cr("send.successful?", con.send("hello"));
                         d.cr("send.successful?", con.send("naber?"));
