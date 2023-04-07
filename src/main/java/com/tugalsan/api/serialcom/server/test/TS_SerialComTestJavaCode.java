@@ -17,10 +17,12 @@ public class TS_SerialComTestJavaCode {
                 .onReply(reply -> d.cr("onReply", reply))
                 .use(con -> {
                     d.cr("con.name()", con.name());
-                    d.cr("con.success_portPresent()", con.success_portPresent());
-                    d.cr("con.success_portSetup()", con.success_portSetup());
-                    d.cr("con.success_portConnect()", con.success_portConnect());
-                    d.cr("con.isConnected()", con.isConnected());
+                    if (!con.isConnected()) {
+                        d.ce("con.success_portPresent()", con.success_portPresent());
+                        d.ce("con.success_portSetup()", con.success_portSetup());
+                        d.ce("con.success_portConnect()", con.success_portConnect());
+                        return;
+                    }
                     IntStream.range(0, 5).forEach(i -> {
                         d.cr("send.successful?", con.send("hello"));
                         d.cr("send.successful?", con.send("naber?"));
@@ -51,11 +53,11 @@ public class TS_SerialComTestJavaCode {
         ));
         IntStream.range(0, 5).forEach(i -> {
             d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                    serialPort, 
+                    serialPort,
                     "hello"
             ));
             d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                    serialPort, 
+                    serialPort,
                     "dosomething"
             ));
             TS_ThreadWait.seconds(null, 1);
