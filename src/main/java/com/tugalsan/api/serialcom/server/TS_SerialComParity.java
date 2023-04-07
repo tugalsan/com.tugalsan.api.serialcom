@@ -16,7 +16,7 @@ public class TS_SerialComParity {
         return new TS_SerialComParity(stopBits, parity);
     }
 
-    public TS_SerialComOnReceived onReceived(TGS_ExecutableType1<String> command) {
-        return TS_SerialComOnReceived.of(this, command);
+    public TS_SerialComOnReply onReply(TGS_ExecutableType1<String> reply) {
+        return TS_SerialComOnReply.of(this, reply);
     }
 }

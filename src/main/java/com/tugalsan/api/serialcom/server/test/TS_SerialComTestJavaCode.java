@@ -14,7 +14,7 @@ public class TS_SerialComTestJavaCode {
         d.cr("testBuilder", "------------------------------------------");
         TS_SerialComBuilder.portFirst()
                 .baudRate_115200().dataBits_8().oneStopBit().parityNone()
-                .onReceived(command -> d.cr("onReceived", command))
+                .onReply(reply -> d.cr("onReply", reply))
                 .use(con -> {
                     d.cr("con.name()", con.name());
                     d.cr("con.success_portConnect()", con.success_portConnect());
@@ -47,17 +47,15 @@ public class TS_SerialComTestJavaCode {
         ));
         d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connect(
                 serialPort,
-                receivedNextCommand -> {
-                    d.cr("test", "receivedNextCommand", receivedNextCommand);
-                }
+                reply -> d.cr("test", "reply", reply)
         ));
         IntStream.range(0, 5).forEach(i -> {
             d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                    serialPort,
+                    serialPort, 
                     "hello"
             ));
             d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                    serialPort,
+                    serialPort, 
                     "dosomething"
             ));
             TS_ThreadWait.seconds(null, 1);

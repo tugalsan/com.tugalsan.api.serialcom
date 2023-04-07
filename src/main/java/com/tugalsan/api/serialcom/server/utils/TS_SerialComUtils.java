@@ -49,18 +49,18 @@ public class TS_SerialComUtils {
         return disconnect(serialPort, null);
     }
 
-    public static boolean disconnect(SerialPort serialPort, TS_ThreadExecutable receiveThread) {
-        d.ci("disconnect", "receiveThread");
-        if (receiveThread != null) {
-            receiveThread.killMe = true;
+    public static boolean disconnect(SerialPort serialPort, TS_ThreadExecutable threadReply) {
+        d.ci("disconnect", "threadReply");
+        if (threadReply != null) {
+            threadReply.killMe = true;
         }
         serialPort.removeDataListener();
         TS_ThreadWait.seconds(null, 2);//FOR ARDUINO
         return serialPort.closePort();
     }
 
-    public static TS_ThreadExecutable connect(SerialPort serialPort, TGS_ExecutableType1<String> receivedNextCommand) {
-        d.ci("connect", "receivedNextCommand", receivedNextCommand != null);
+    public static TS_ThreadExecutable connect(SerialPort serialPort, TGS_ExecutableType1<String> onReply) {
+        d.ci("connect", "onReply", onReply != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
             d.ce("connect", "Error on setComPortTimeouts");
@@ -71,7 +71,7 @@ public class TS_SerialComUtils {
             d.ce("connect", "Error on openPort");
             return null;
         }
-        var killableReceiveThread = new TS_ThreadExecutable() {
+        var threadReply = new TS_ThreadExecutable() {
 
             private void waitForNewData() {
                 while (serialPort.bytesAvailable() == 0 || serialPort.bytesAvailable() == -1) {
@@ -109,7 +109,7 @@ public class TS_SerialComUtils {
                 }
                 //PROCESS FIRST CMD
                 var firstCommand = buffer.substring(0, idx).replace("\r", "");
-                receivedNextCommand.execute(firstCommand);
+                onReply.execute(firstCommand);
                 //REMOVE FIRST CMD FROM BUFFER
                 var leftOver = buffer.length() == idx + 1
                         ? ""
@@ -139,8 +139,8 @@ public class TS_SerialComUtils {
             }
             final private StringBuilder buffer = new StringBuilder();
         };
-        TS_ThreadRun.now(killableReceiveThread.setName(d.className + ".connect.killableReceiveThread"));
-        return killableReceiveThread;
+        TS_ThreadRun.now(threadReply.setName(d.className + ".connect.threadReply"));
+        return threadReply;
     }
 
     public static String name(SerialPort serialPort) {

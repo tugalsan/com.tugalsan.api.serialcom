@@ -24,22 +24,22 @@ public class TS_SerialComConnection {
     private boolean setupSuccessfull;
 
     final public boolean success_portConnect() {
-        return threadExecutable != null;
+        return threadReply != null;
     }
 
     final public boolean isConnected() {
         return success_portPresent() && success_portSetup() && success_portConnect() && port.isOpen();
     }
 
-    private TS_SerialComConnection(TS_SerialComOnReceived onReceived) {
-        this.onReceivedCommand = onReceived.command;
-        var parity = onReceived.parity.parity;
+    private TS_SerialComConnection(TS_SerialComOnReply onReply) {
+        this.onReply = onReply.onReply;
+        var parity = onReply.parity.parity;
         this.parityName = parity == null ? null : parity.name();
-        var stopBits = onReceived.parity.stopBits.stopBits;
+        var stopBits = onReply.parity.stopBits.stopBits;
         this.stopBitsName = stopBits == null ? null : stopBits.name();
-        this.dataBits = onReceived.parity.stopBits.dataBits.dataBits;
-        this.baudRate = onReceived.parity.stopBits.dataBits.baudRate.baudRate;
-        this.port = onReceived.parity.stopBits.dataBits.baudRate.port.serialPort;
+        this.dataBits = onReply.parity.stopBits.dataBits.dataBits;
+        this.baudRate = onReply.parity.stopBits.dataBits.baudRate.baudRate;
+        this.port = onReply.parity.stopBits.dataBits.baudRate.port.serialPort;
         if (!success_portPresent()) {
             return;
         }
@@ -47,23 +47,23 @@ public class TS_SerialComConnection {
         if (!setupSuccessfull) {
             return;
         }
-        this.threadExecutable = TS_SerialComUtils.connect(port, onReceivedCommand);
+        this.threadReply = TS_SerialComUtils.connect(port, this.onReply);
     }
-    private TS_ThreadExecutable threadExecutable;
-    final public TGS_ExecutableType1<String> onReceivedCommand;
+    private TS_ThreadExecutable threadReply;
+    final public TGS_ExecutableType1<String> onReply;
     final public String parityName;
     final public String stopBitsName;
     final public int dataBits;
     final public int baudRate;
     final public SerialPort port;
 
-    public static TS_SerialComConnection of(TS_SerialComOnReceived onReceived) {
-        return new TS_SerialComConnection(onReceived);
+    public static TS_SerialComConnection of(TS_SerialComOnReply onReply) {
+        return new TS_SerialComConnection(onReply);
     }
 
     public boolean disconnect() {
         if (isConnected()) {
-            return TS_SerialComUtils.disconnect(port, threadExecutable);
+            return TS_SerialComUtils.disconnect(port, threadReply);
         }
         d.ce("disconnect", "Error on not connected");
         return false;
