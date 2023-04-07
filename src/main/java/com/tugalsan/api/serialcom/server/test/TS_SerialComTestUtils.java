@@ -1,6 +1,5 @@
 package com.tugalsan.api.serialcom.server.test;
 
-import com.fazecast.jSerialComm.*;
 import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.serialcom.server.utils.*;
 
@@ -19,11 +18,9 @@ public class TS_SerialComTestUtils {
                 serialPort
         ));
         d.cr("test", "setup.isSuccessfull = " + TS_SerialComUtils.setup(
-                serialPort,
-                115200,
-                8,
-                SerialPort.ONE_STOP_BIT,//ONE_POINT_FIVE_STOP_BITS / TWO_STOP_BITS
-                SerialPort.NO_PARITY //ODD_PARITY EVEN_PARITY 
+                serialPort, 115200, 8,
+                TS_SerialComUtils.STOP_BITS.ONE_STOP_BIT,
+                TS_SerialComUtils.PARITY.NO_PARITY
         ));
         d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connect(
                 serialPort,

@@ -1,6 +1,7 @@
 package com.tugalsan.api.serialcom.server.utils;
 
 import com.fazecast.jSerialComm.*;
+import com.tugalsan.api.coronator.client.TGS_Coronator;
 import com.tugalsan.api.executable.client.*;
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
@@ -11,9 +12,18 @@ import java.util.List;
 
 public class TS_SerialComUtils {
 
-    final private static TS_Log d = TS_Log.of(TS_SerialComUtils.class);
+    final private static TS_Log d = TS_Log.of(true, TS_SerialComUtils.class);
+
+    public static enum PARITY {
+        NO_PARITY, ODD_PARITY, EVEN_PARITY;
+    }
+
+    public static enum STOP_BITS {
+        ONE_STOP_BIT, ONE_POINT_FIVE_STOP_BITS, TWO_STOP_BITS;
+    }
 
     public static boolean send(SerialPort serialPort, String command) {
+        d.ci("send", command);
         var byteArray = command.getBytes();
         var result = serialPort.writeBytes(byteArray, byteArray.length) != -1;
         if (!result) {
@@ -26,6 +36,7 @@ public class TS_SerialComUtils {
     }
 
     public static List<SerialPort> list() {
+        d.ci("list", "");
         var listArr = SerialPort.getCommPorts();
         if (listArr == null || listArr.length == 0) {
             return new ArrayList();
@@ -34,10 +45,12 @@ public class TS_SerialComUtils {
     }
 
     public static boolean disconnect(SerialPort serialPort) {
+        d.ci("disconnect", "");
         return disconnect(serialPort, null);
     }
 
     public static boolean disconnect(SerialPort serialPort, TS_ThreadExecutable receiveThread) {
+        d.ci("disconnect", "receiveThread");
         if (receiveThread != null) {
             receiveThread.killMe = true;
         }
@@ -47,6 +60,7 @@ public class TS_SerialComUtils {
     }
 
     public static TS_ThreadExecutable connect(SerialPort serialPort, TGS_ExecutableType1<String> receivedNextCommand) {
+        d.ci("connect", "receivedNextCommand", receivedNextCommand != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
             d.ce("connect", "Error on setComPortTimeouts");
@@ -57,7 +71,7 @@ public class TS_SerialComUtils {
             d.ce("connect", "Error on openPort");
             return null;
         }
-        var killableThread = new TS_ThreadExecutable() {
+        var killableReceiveThread = new TS_ThreadExecutable() {
 
             private void waitForNewData() {
                 while (serialPort.bytesAvailable() == 0 || serialPort.bytesAvailable() == -1) {
@@ -125,31 +139,41 @@ public class TS_SerialComUtils {
             }
             final private StringBuilder buffer = new StringBuilder();
         };
-        TS_ThreadRun.now(killableThread.setName(d.className + ".connect"));
-        return killableThread;
+        TS_ThreadRun.now(killableReceiveThread.setName(d.className + ".connect.killableReceiveThread"));
+        return killableReceiveThread;
     }
 
     public static String name(SerialPort serialPort) {
+        d.ci("name", "");
         return serialPort.getDescriptivePortName();
     }
 
-    public static boolean setup(SerialPort serialPort, int newBaudRate, int newDataBits, int newStopBits, int newParity) {
-        var result = serialPort.setBaudRate(newBaudRate);
+    public static boolean setup(SerialPort serialPort, int baudRate, int dataBits, STOP_BITS stopBits, PARITY parity) {
+        d.ci("setup", baudRate, dataBits, stopBits, parity);
+        var result = serialPort.setBaudRate(baudRate);
         if (!result) {
             d.ce("setup", "Error on setBaudRate");
             return false;
         }
-        result = serialPort.setNumDataBits(newDataBits);
+        result = serialPort.setNumDataBits(dataBits);
         if (!result) {
             d.ce("setup", "Error on setNumDataBits");
             return false;
         }
-        result = serialPort.setNumStopBits(newStopBits);
+        result = serialPort.setNumStopBits(TGS_Coronator.ofInt()
+                .anoint(val -> SerialPort.ONE_STOP_BIT)
+                .anointAndCoronateIf(val -> stopBits == STOP_BITS.ONE_POINT_FIVE_STOP_BITS, val -> SerialPort.ONE_POINT_FIVE_STOP_BITS)
+                .anointAndCoronateIf(val -> stopBits == STOP_BITS.TWO_STOP_BITS, val -> SerialPort.TWO_STOP_BITS)
+                .coronate());
         if (!result) {
             d.ce("setup", "Error on setNumStopBits");
             return false;
         }
-        result = serialPort.setParity(newParity);
+        result = serialPort.setParity(TGS_Coronator.ofInt()
+                .anoint(val -> SerialPort.NO_PARITY)
+                .anointAndCoronateIf(val -> parity == PARITY.EVEN_PARITY, val -> SerialPort.EVEN_PARITY)
+                .anointAndCoronateIf(val -> parity == PARITY.ODD_PARITY, val -> SerialPort.ODD_PARITY)
+                .coronate());
         if (!result) {
             d.ce("setup", "Error on setParity");
             return false;

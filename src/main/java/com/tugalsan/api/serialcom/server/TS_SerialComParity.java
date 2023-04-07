@@ -1,12 +1,9 @@
 package com.tugalsan.api.serialcom.server;
 
 import com.tugalsan.api.executable.client.TGS_ExecutableType1;
+import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils.PARITY;
 
 public class TS_SerialComParity {
-
-    public static enum PARITY {
-        NO_PARITY, ODD_PARITY, EVEN_PARITY;
-    }
 
     private TS_SerialComParity(TS_SerialComStopBits stopBits, PARITY parity) {
         this.stopBits = stopBits;

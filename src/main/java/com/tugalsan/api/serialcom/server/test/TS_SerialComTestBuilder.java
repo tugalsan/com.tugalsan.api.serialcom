@@ -12,12 +12,13 @@ public class TS_SerialComTestBuilder {
                 .baudRate_115200().dataBits_8().oneStopBit().parityNone()
                 .onReceived(command -> d.cr("onReceived", command))
                 .use(con -> {
+                    d.cr("con.name()", con.name());
                     d.cr("con.success_portConnect()", con.success_portConnect());
                     d.cr("con.success_portPresent()", con.success_portPresent());
                     d.cr("con.success_portSetup()", con.success_portSetup());
                     d.cr("con.isConnected()", con.isConnected());
-                    con.send("hello");
-                    con.send("naber?");
+                    d.cr("send.successful?", con.send("hello"));
+                    d.cr("send.successful?", con.send("naber?"));
                 });
     }
 }
