@@ -36,6 +36,10 @@ public class TS_SerialComUtils {
     }
 
     public static List<SerialPort> list() {
+        if (!dontDeleteMyTemporaryFilesDuringBootUp) {
+            dontDeleteMyTemporaryFilesDuringBootUp = true;
+            System.setProperty("fazecast.jSerialComm.appid", d.className);
+        }
         d.ci("list", "");
         var listArr = SerialPort.getCommPorts();
         if (listArr == null || listArr.length == 0) {
@@ -43,6 +47,7 @@ public class TS_SerialComUtils {
         }
         return TGS_ListUtils.of(listArr);
     }
+    private static boolean dontDeleteMyTemporaryFilesDuringBootUp = false;
 
     public static boolean disconnect(SerialPort serialPort) {
         d.ci("disconnect", "");

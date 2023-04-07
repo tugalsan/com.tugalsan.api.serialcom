@@ -2,7 +2,6 @@ package com.tugalsan.api.serialcom.server.test;
 
 import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.serialcom.server.*;
-import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import java.util.stream.IntStream;
 
