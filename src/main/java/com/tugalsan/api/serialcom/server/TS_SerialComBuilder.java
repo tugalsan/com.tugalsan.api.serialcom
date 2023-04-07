@@ -17,11 +17,11 @@ public class TS_SerialComBuilder {
     }
 
     public static TS_SerialComPort portFirst() {
-        return portFirst(port -> {
+        return port(port -> {
         });
     }
 
-    public static TS_SerialComPort portFirst(TGS_ExecutableType1<SerialPort> port) {
+    public static TS_SerialComPort port(TGS_ExecutableType1<SerialPort> port) {
         var list = TS_SerialComUtils.list();
         var firstPort = list.isEmpty() ? null : list.get(0);
         port.execute(firstPort);
