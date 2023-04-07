@@ -3,12 +3,13 @@ package com.tugalsan.api.serialcom.server.test;
 import com.tugalsan.api.log.server.*;
 import com.tugalsan.api.serialcom.server.*;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
+import java.time.Duration;
 import java.util.stream.IntStream;
 
 public class TS_SerialComTestJavaCode {
-
+    
     final private static TS_Log d = TS_Log.of(TS_SerialComTestJavaCode.class);
-
+    
     public static void testBuilder() {
         d.cr("testBuilder", "------------------------------------------");
         TS_SerialComBuilder.portFirst()
@@ -24,7 +25,7 @@ public class TS_SerialComTestJavaCode {
                     IntStream.range(0, 5).forEach(i -> {
                         d.cr("send.successful?", con.send("hello"));
                         d.cr("send.successful?", con.send("naber?"));
-                        TS_ThreadWait.seconds(null, 1);
+                        TS_ThreadWait.of(Duration.ofSeconds(1));
                     });
                 });
     }
