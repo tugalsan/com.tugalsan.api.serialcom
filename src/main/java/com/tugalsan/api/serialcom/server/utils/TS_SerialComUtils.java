@@ -12,7 +12,7 @@ import java.util.List;
 
 public class TS_SerialComUtils {
 
-    final private static TS_Log d = TS_Log.of(true, TS_SerialComUtils.class);
+    final private static TS_Log d = TS_Log.of(TS_SerialComUtils.class);
 
     public static enum PARITY {
         NO_PARITY, ODD_PARITY, EVEN_PARITY;
