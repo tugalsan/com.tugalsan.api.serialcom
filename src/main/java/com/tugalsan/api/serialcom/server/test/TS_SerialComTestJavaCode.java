@@ -13,7 +13,7 @@ public class TS_SerialComTestJavaCode {
         d.cr("testBuilder", "------------------------------------------");
         TS_SerialComBuilder.portFirst()
                 .baudRate_115200().dataBits_8().oneStopBit().parityNone()
-                .onError((successfulPort, successfulSetup, successfulConnect) -> {
+                .onConnectionError((successfulPort, successfulSetup, successfulConnect) -> {
                     d.ce("onError", "successfulPort", successfulPort);
                     d.ce("onError", "successfulSetup", successfulSetup);
                     d.ce("onError", "successfulConnect", successfulConnect);
