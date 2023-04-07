@@ -30,40 +30,4 @@ public class TS_SerialComTestJavaCode {
                     });
                 });
     }
-
-    public static void testUtils() {
-        d.cr("testUtils", "------------------------------------------");
-        var serialPortList = TS_SerialComUtils.list();
-        if (serialPortList.isEmpty()) {
-            d.cr("test", "No serial port detected");
-            return;
-        }
-        var serialPort = serialPortList.get(0);
-        d.cr("test", "serialPort.name = " + TS_SerialComUtils.name(
-                serialPort
-        ));
-        d.cr("test", "setup.isSuccessfull = " + TS_SerialComUtils.setup(
-                serialPort, 115200, 8,
-                TS_SerialComUtils.STOP_BITS.ONE_STOP_BIT,
-                TS_SerialComUtils.PARITY.NO_PARITY
-        ));
-        d.cr("test", "connect.isSuccessfull = " + TS_SerialComUtils.connect(
-                serialPort,
-                reply -> d.cr("test", "reply", reply)
-        ));
-        IntStream.range(0, 5).forEach(i -> {
-            d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                    serialPort,
-                    "hello"
-            ));
-            d.cr("test", "send.isSuccessfull = " + TS_SerialComUtils.send(
-                    serialPort,
-                    "dosomething"
-            ));
-            TS_ThreadWait.seconds(null, 1);
-        });
-        d.cr("test", "disconnect.isSuccessfull = " + TS_SerialComUtils.disconnect(
-                serialPort
-        ));
-    }
 }
