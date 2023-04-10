@@ -14,16 +14,16 @@ public class TS_SerialComConnection {
         return port == null ? null : TS_SerialComUtils.name(port);
     }
 
-    final public boolean successfulPort() {
+    final private boolean successfulPort() {
         return port != null;
     }
 
-    final public boolean successfulSetup() {
+    final private boolean successfulSetup() {
         return successfulSetup;
     }
     private boolean successfulSetup;
 
-    final public boolean successfulConnect() {
+    final private boolean successfulConnect() {
         return threadReply != null;
     }
 
@@ -33,13 +33,13 @@ public class TS_SerialComConnection {
 
     private TS_SerialComConnection(TS_SerialComOnReply onReply) {
         this.onReply = onReply.onReply;
-        var parity = onReply.onConnectionError.parity.parity;
+        var parity = onReply.onConnectError.onSetupError.onPortError.parity.parity;
         this.parityName = parity == null ? null : parity.name();
-        var stopBits = onReply.onConnectionError.parity.stopBits.stopBits;
+        var stopBits = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.stopBits;
         this.stopBitsName = stopBits == null ? null : stopBits.name();
-        this.dataBits = onReply.onConnectionError.parity.stopBits.dataBits.dataBits;
-        this.baudRate = onReply.onConnectionError.parity.stopBits.dataBits.baudRate.baudRate;
-        this.port = onReply.onConnectionError.parity.stopBits.dataBits.baudRate.port.serialPort;
+        this.dataBits = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.dataBits.dataBits;
+        this.baudRate = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.dataBits.baudRate.baudRate;
+        this.port = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.dataBits.baudRate.port.serialPort;
         if (!successfulPort()) {
             return;
         }
@@ -48,8 +48,17 @@ public class TS_SerialComConnection {
             return;
         }
         this.threadReply = TS_SerialComUtils.connect(port, this.onReply);
-        if (!isConnected()) {
-            onReply.onConnectionError.successfulPort_successfulSetup_successfulConnect.execute(successfulPort(), successfulSetup(), successfulConnect());
+        if (!successfulPort()) {
+            onReply.onConnectError.onSetupError.onPortError.portError.execute();
+            return;
+        }
+        if (!successfulSetup()) {
+            onReply.onConnectError.onSetupError.setupError.execute();
+            return;
+        }
+        if (!successfulConnect()) {
+            onReply.onConnectError.connectError.execute();
+            return;
         }
     }
     private TS_ThreadExecutable threadReply;

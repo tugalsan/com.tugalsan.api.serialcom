@@ -1,6 +1,6 @@
 package com.tugalsan.api.serialcom.server;
 
-import com.tugalsan.api.executable.client.TGS_ExecutableType3;
+import com.tugalsan.api.executable.client.TGS_Executable;
 import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils.PARITY;
 
 public class TS_SerialComParity {
@@ -16,7 +16,7 @@ public class TS_SerialComParity {
         return new TS_SerialComParity(stopBits, parity);
     }
 
-    public TS_SerialComOnConnectionError onConnectionError(TGS_ExecutableType3<Boolean, Boolean, Boolean> successfulPort_successfulSetup_successfulConnect) {
-        return TS_SerialComOnConnectionError.of(this, successfulPort_successfulSetup_successfulConnect);
+    public TS_SerialComOnPortError onPortError(TGS_Executable portError) {
+        return TS_SerialComOnPortError.of(this, portError);
     }
 }
