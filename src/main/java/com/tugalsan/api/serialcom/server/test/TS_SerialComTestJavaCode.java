@@ -7,18 +7,15 @@ import java.time.Duration;
 import java.util.stream.IntStream;
 
 public class TS_SerialComTestJavaCode {
-    
+
     final private static TS_Log d = TS_Log.of(TS_SerialComTestJavaCode.class);
-    
+
     public static void testBuilder() {
-        d.cr("testBuilder", "------------------------------------------");
         TS_SerialComBuilder.portFirst()
                 .baudRate_115200().dataBits_8().oneStopBit().parityNone()
-                .onConnectionError((successfulPort, successfulSetup, successfulConnect) -> {
-                    d.ce("onError", "successfulPort", successfulPort);
-                    d.ce("onError", "successfulSetup", successfulSetup);
-                    d.ce("onError", "successfulConnect", successfulConnect);
-                })
+                .onPortError(() -> d.ce("onPortError", "what2do?"))
+                .onSetupError(() -> d.ce("onSetupError", "what2do?"))
+                .onConnectError(() -> d.ce("onConnectError", "what2do?"))
                 .onReply(reply -> d.cr("onReply", reply))
                 .onSucess_useAndDisconnect_the_(con -> {
                     d.cr("con.name()", con.name());
