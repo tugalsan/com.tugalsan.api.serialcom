@@ -32,6 +32,7 @@ public class TS_SerialComConnection {
     }
 
     private TS_SerialComConnection(TS_SerialComOnReply onReply) {
+        //BIND PARAMETERS
         this.onReply = onReply.onReply;
         var parity = onReply.onConnectError.onSetupError.onPortError.parity.parity;
         this.parityName = parity == null ? null : parity.name();
@@ -39,24 +40,24 @@ public class TS_SerialComConnection {
         this.stopBitsName = stopBits == null ? null : stopBits.name();
         this.dataBits = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.dataBits.dataBits;
         this.baudRate = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.dataBits.baudRate.baudRate;
+        //BIND PORT
         this.port = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.dataBits.baudRate.port.serialPort;
         if (!successfulPort()) {
-            return;
-        }
-        this.successfulSetup = TS_SerialComUtils.setup(port, baudRate, dataBits, stopBits, parity);
-        if (!successfulSetup) {
-            return;
-        }
-        this.threadReply = TS_SerialComUtils.connect(port, this.onReply);
-        if (!successfulPort()) {
+            d.ce("constructor", "error detected", "!successfulPort");
             onReply.onConnectError.onSetupError.onPortError.portError.execute();
             return;
         }
+        //BIND SETUP
+        this.successfulSetup = TS_SerialComUtils.setup(port, baudRate, dataBits, stopBits, parity);
         if (!successfulSetup()) {
+            d.ce("constructor", "error detected", "!successfulSetup");
             onReply.onConnectError.onSetupError.setupError.execute();
             return;
         }
+        //CONNECT AND BIND REPLY
+        this.threadReply = TS_SerialComUtils.connect(port, this.onReply);
         if (!successfulConnect()) {
+            d.ce("constructor", "error detected", "!successfulConnect");
             onReply.onConnectError.connectError.execute();
             return;
         }

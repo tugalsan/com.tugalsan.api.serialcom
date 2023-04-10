@@ -20,7 +20,7 @@ public class TS_SerialComOnReply {
         return TS_SerialComConnection.of(this);
     }
 
-    public boolean onSucess_useAndDisconnect_the_(TGS_ExecutableType1<TS_SerialComConnection> con) {
+    public boolean onSuccess_useAndDisconnect_the_(TGS_ExecutableType1<TS_SerialComConnection> con) {
         var connection = connect();
         if (!connection.isConnected()) {
             return false;
