@@ -56,13 +56,10 @@ public class TS_SerialComTestJavaCode {
                         .onConnectError(() -> d.ce("onConnectError", "what2do?"))
                         .onReply_useDefaultMessageBroker_withMaxMessageCount(10)
                         .onSuccess_useAndClose_defaultMessageBroker((con, mb) -> {
-                            d.cr("with broker", "#0");
                             var cmd = TS_SerialComTestKinConyKC868_A32_R1_2.chipName();
-                            d.cr("with broker", "#1");
+                            d.cr("with broker", "calling...");
                             var reply = mb.send(2, cmd);
-                            d.cr("with broker", "#2");
-                            d.cr("helper.send", cmd, reply);
-                            d.cr("with broker", "#3");
+                            d.cr("with broker", cmd, reply);
                         })
         );
     }
