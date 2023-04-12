@@ -10,7 +10,7 @@ public class TS_SerialComTestJavaCode {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComTestJavaCode.class);
 
-    public static void test_autoClosable_customMessageBrokerReply() {
+    public static void test_autoClosable_customMessageBroker() {
         try (var con = TS_SerialComBuilder.portFirst()
                 .baudRate_115200().dataBits_8().oneStopBit().parityNone()
                 .onPortError(() -> d.ce("onPortError", "what2do?"))
@@ -27,7 +27,7 @@ public class TS_SerialComTestJavaCode {
         }
     }
 
-    public static void test_use_customMessageBrokerReply() {
+    public static void test_use_customMessageBroker() {
         d.cr("builder.result",
                 TS_SerialComBuilder.portFirst()
                         .baudRate_115200().dataBits_8().oneStopBit().parityNone()
@@ -47,7 +47,7 @@ public class TS_SerialComTestJavaCode {
     }
 
     @Deprecated //StructuredTaskScope.ShutdownOnFailure not working :....(
-    public static void test_use_defaultMessageBrokerReply() {
+    public static void test_use_defaultMessageBroker() {
         d.cr("builder.result",
                 TS_SerialComBuilder.portFirst()
                         .baudRate_115200().dataBits_8().oneStopBit().parityNone()
