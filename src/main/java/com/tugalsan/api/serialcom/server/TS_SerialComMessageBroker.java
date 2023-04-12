@@ -37,12 +37,18 @@ public class TS_SerialComMessageBroker {
             return null;
         }
         Callable<String> callableReply = () -> {
+            d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#0");
             String reply = null;
             while (reply == null) {
+                d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#1");
                 reply = replies.findFirst(val -> val.contains(command));
+                d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#2");
                 TS_ThreadWait.of(Duration.ofSeconds(1));
+                d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#3");
             }
+            d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#4");
             replies.removeAll(reply);
+            d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#5");
             return reply;
         };
         d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "will use TS_ThreadRunAllUntilFirstFail...");
