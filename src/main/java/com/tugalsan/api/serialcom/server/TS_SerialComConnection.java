@@ -6,9 +6,9 @@ import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.utils.*;
 import com.tugalsan.api.thread.server.TS_ThreadExecutable;
 
-public class TS_SerialComConnection {
+public class TS_SerialComConnection implements AutoCloseable {
 
-    final private static TS_Log d = TS_Log.of(TS_SerialComConnection.class);
+    final private static TS_Log d = TS_Log.of(true, TS_SerialComConnection.class);
 
     final public String name() {
         return port == null ? null : TS_SerialComUtils.name(port);
@@ -32,8 +32,16 @@ public class TS_SerialComConnection {
     }
 
     private TS_SerialComConnection(TS_SerialComOnReply onReply) {
+        //BIND MESSAGE BROKER
+        if (onReply.onReply_customMessageBroker == null) {//use default broker
+            this.messageBroker = TS_SerialComMessageBroker.of(onReply.defaultMessageBrokerMessageSize);
+            this.messageBroker.setConnection(this);
+            this.onReply = reply -> messageBroker.onReply(reply);
+        } else {//if custom broker exists
+            this.messageBroker = null;
+            this.onReply = onReply.onReply_customMessageBroker;
+        }
         //BIND PARAMETERS
-        this.onReply = onReply.onReply;
         var parity = onReply.onConnectError.onSetupError.onPortError.parity.parity;
         this.parityName = parity == null ? null : parity.name();
         var stopBits = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.stopBits;
@@ -62,6 +70,7 @@ public class TS_SerialComConnection {
             return;
         }
     }
+    final private TS_SerialComMessageBroker messageBroker;
     private TS_ThreadExecutable threadReply;
     final public TGS_ExecutableType1<String> onReply;
     final public String parityName;
@@ -74,12 +83,13 @@ public class TS_SerialComConnection {
         return new TS_SerialComConnection(onReply);
     }
 
-    public boolean disconnect() {
+    @Override
+    public /*boolean*/ void close() {
         if (!isConnected()) {
             d.ce("disconnect", "Error on not connected");
-            return false;
+            return /*false*/;
         }
-        return TS_SerialComUtils.disconnect(port, threadReply);
+        /*return*/ TS_SerialComUtils.disconnect(port, threadReply);
     }
 
     public boolean send(String command) {
@@ -90,13 +100,35 @@ public class TS_SerialComConnection {
         return TS_SerialComUtils.send(port, command);
     }
 
-    public boolean useAndDisconnect(TGS_ExecutableType1<TS_SerialComConnection> con) {
-        if (!isConnected()) {
-            d.ce("useAndDisconnect", "Error on not connected");
+    public boolean useAndClose_WithDefaultMessageBroker(TGS_ExecutableType2<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
+        try {
+            if (!isConnected()) {
+                d.ce("useAndClose", "Error on not connected");
+                return false;
+            }
+            con_mb.execute(this, messageBroker);
+        } catch (Exception e) {
+            d.ct("useAndClose", e);
             return false;
+        } finally {
+            close();
         }
-        con.execute(this);
-        disconnect();
+        return true;
+    }
+
+    public boolean useAndClose_WithCustomMessageBroker(TGS_ExecutableType1<TS_SerialComConnection> con) {
+        try {
+            if (!isConnected()) {
+                d.ce("useAndClose", "Error on not connected");
+                return false;
+            }
+            con.execute(this);
+        } catch (Exception e) {
+            d.ct("useAndClose", e);
+            return false;
+        } finally {
+            close();
+        }
         return true;
     }
 }

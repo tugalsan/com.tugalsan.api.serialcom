@@ -1,8 +1,13 @@
 package com.tugalsan.api.serialcom.server.test;
 
 public class TS_SerialComTestArduinoCode {
+    /*
+        WITE A TUTORIAL HOW TO SETUP ANDROID    
+    */
+    
+    
     /* 
-   //USAGE: stringUtils.isInt("ad") -> true/false
+  //USAGE: stringUtils.isInt("ad") -> true/false
 class TA_StringUtils {
 public:
   TA_StringUtils();
@@ -138,11 +143,11 @@ bool TA_Serial::hasNext() {
   bool lineFound = false;
   while (Serial.available() > 0) {
     char chr = Serial.read();
-    if (chr == '\r') {         //ignore
+    if (chr == '\r' || (chr == '\n' && _bufferIdx == 0)) {//ignore
     } else if (chr == '\n') {  //command received fully
-      _buffer[_bufferIdx] = 0;
-      lineFound = _bufferIdx > 0;
-      _bufferIdx = 0;
+      _buffer[_bufferIdx] = 0;//ENDS STRING
+      lineFound = true;
+      _bufferIdx = 0; //FOR THE NEXT ROUND
     } else if (_bufferIdx < _bufferSize && lineFound == false) {  //buffer up char
       _buffer[_bufferIdx++] = chr;
     }
@@ -153,169 +158,168 @@ TA_Serial serial(true, 115200);
 
 //TA_Chip_KinCony_KC868_A32_R1_2
 #include "PCF8574.h"
-TwoWire _I2C_1 = TwoWire(0);
-TwoWire _I2C_2 = TwoWire(1);
-PCF8574 _pcf8574_R1(&_I2C_2, 0x24, 15, 13);
-PCF8574 _pcf8574_R2(&_I2C_2, 0x25, 15, 13);
-PCF8574 _pcf8574_R3(&_I2C_2, 0x21, 15, 13);
-PCF8574 _pcf8574_R4(&_I2C_2, 0x22, 15, 13);
-PCF8574 _pcf8574_I1(&_I2C_1, 0x24, 4, 5);
-PCF8574 _pcf8574_I2(&_I2C_1, 0x25, 4, 5);
-PCF8574 _pcf8574_I3(&_I2C_1, 0x21, 4, 5);
-PCF8574 _pcf8574_I4(&_I2C_1, 0x22, 4, 5);
+TwoWire _I2C_0 = TwoWire(0);
+PCF8574 _pcf8574_I1(&_I2C_0, 0x24, 4, 5);
+PCF8574 _pcf8574_I2(&_I2C_0, 0x25, 4, 5);
+PCF8574 _pcf8574_I3(&_I2C_0, 0x21, 4, 5);
+PCF8574 _pcf8574_I4(&_I2C_0, 0x22, 4, 5);
+TwoWire _I2C_1 = TwoWire(1);
+PCF8574 _pcf8574_R1(&_I2C_1, 0x24, 15, 13);
+PCF8574 _pcf8574_R2(&_I2C_1, 0x25, 15, 13);
+PCF8574 _pcf8574_R3(&_I2C_1, 0x21, 15, 13);
+PCF8574 _pcf8574_R4(&_I2C_1, 0x22, 15, 13);
 class TA_Chip_KinCony_KC868_A32_R1_2 {
 public:
   TA_Chip_KinCony_KC868_A32_R1_2();
   String name();
   void setup();
-  bool getDI_fr1_to32(int pinIdx);
-  bool getDO_fr1_to32(int pinIdx);
-  void setDO_fr1_to32(int pinIdx, bool value);
+  bool isValidPinNumber(int pinNumber);
+  bool getDI_fr1_to32(int pinNumber);
+  bool getDO_fr1_to32(int pinNumber);
+  bool setDO_fr1_to32(int pinNumber, bool value);
 private:
 };
 TA_Chip_KinCony_KC868_A32_R1_2::TA_Chip_KinCony_KC868_A32_R1_2() {
 }
-bool TA_Chip_KinCony_KC868_A32_R1_2::getDI_fr1_to32(int pinIdx) {
-  if (pinIdx <= 0) {
+bool TA_Chip_KinCony_KC868_A32_R1_2::isValidPinNumber(int pinNumber) {
+  return pinNumber >= 1 && pinNumber <= 32;
+}
+bool TA_Chip_KinCony_KC868_A32_R1_2::getDI_fr1_to32(int pinNumber) {
+  if (!isValidPinNumber(pinNumber)) {
     return false;
   }
-  if (pinIdx <= 8) {
-    if (pinIdx == 1) return _pcf8574_I1.digitalRead(P0) == HIGH;
-    if (pinIdx == 2) return _pcf8574_I1.digitalRead(P1) == HIGH;
-    if (pinIdx == 3) return _pcf8574_I1.digitalRead(P2) == HIGH;
-    if (pinIdx == 4) return _pcf8574_I1.digitalRead(P3) == HIGH;
-    if (pinIdx == 5) return _pcf8574_I1.digitalRead(P4) == HIGH;
-    if (pinIdx == 6) return _pcf8574_I1.digitalRead(P5) == HIGH;
-    if (pinIdx == 7) return _pcf8574_I1.digitalRead(P6) == HIGH;
-    if (pinIdx == 8) return _pcf8574_I1.digitalRead(P7) == HIGH;
+  if (pinNumber <= 8) {
+    if (pinNumber == 1) return _pcf8574_I1.digitalRead(P0) == LOW;
+    if (pinNumber == 2) return _pcf8574_I1.digitalRead(P1) == LOW;
+    if (pinNumber == 3) return _pcf8574_I1.digitalRead(P2) == LOW;
+    if (pinNumber == 4) return _pcf8574_I1.digitalRead(P3) == LOW;
+    if (pinNumber == 5) return _pcf8574_I1.digitalRead(P4) == LOW;
+    if (pinNumber == 6) return _pcf8574_I1.digitalRead(P5) == LOW;
+    if (pinNumber == 7) return _pcf8574_I1.digitalRead(P6) == LOW;
+    if (pinNumber == 8) return _pcf8574_I1.digitalRead(P7) == LOW;
   }
-  if (pinIdx <= 16) {
-    if (pinIdx == 9) return _pcf8574_I2.digitalRead(P0) == HIGH;
-    if (pinIdx == 10) return _pcf8574_I2.digitalRead(P1) == HIGH;
-    if (pinIdx == 11) return _pcf8574_I2.digitalRead(P2) == HIGH;
-    if (pinIdx == 12) return _pcf8574_I2.digitalRead(P3) == HIGH;
-    if (pinIdx == 13) return _pcf8574_I2.digitalRead(P4) == HIGH;
-    if (pinIdx == 14) return _pcf8574_I2.digitalRead(P5) == HIGH;
-    if (pinIdx == 15) return _pcf8574_I2.digitalRead(P6) == HIGH;
-    if (pinIdx == 16) return _pcf8574_I2.digitalRead(P7) == HIGH;
+  if (pinNumber <= 16) {
+    if (pinNumber == 9) return _pcf8574_I2.digitalRead(P0) == LOW;
+    if (pinNumber == 10) return _pcf8574_I2.digitalRead(P1) == LOW;
+    if (pinNumber == 11) return _pcf8574_I2.digitalRead(P2) == LOW;
+    if (pinNumber == 12) return _pcf8574_I2.digitalRead(P3) == LOW;
+    if (pinNumber == 13) return _pcf8574_I2.digitalRead(P4) == LOW;
+    if (pinNumber == 14) return _pcf8574_I2.digitalRead(P5) == LOW;
+    if (pinNumber == 15) return _pcf8574_I2.digitalRead(P6) == LOW;
+    if (pinNumber == 16) return _pcf8574_I2.digitalRead(P7) == LOW;
   }
-  if (pinIdx <= 24) {
-    if (pinIdx == 17) return _pcf8574_I3.digitalRead(P0) == HIGH;
-    if (pinIdx == 18) return _pcf8574_I3.digitalRead(P1) == HIGH;
-    if (pinIdx == 19) return _pcf8574_I3.digitalRead(P2) == HIGH;
-    if (pinIdx == 20) return _pcf8574_I3.digitalRead(P3) == HIGH;
-    if (pinIdx == 21) return _pcf8574_I3.digitalRead(P4) == HIGH;
-    if (pinIdx == 22) return _pcf8574_I3.digitalRead(P5) == HIGH;
-    if (pinIdx == 23) return _pcf8574_I3.digitalRead(P6) == HIGH;
-    if (pinIdx == 24) return _pcf8574_I3.digitalRead(P7) == HIGH;
+  if (pinNumber <= 24) {
+    if (pinNumber == 17) return _pcf8574_I3.digitalRead(P0) == LOW;
+    if (pinNumber == 18) return _pcf8574_I3.digitalRead(P1) == LOW;
+    if (pinNumber == 19) return _pcf8574_I3.digitalRead(P2) == LOW;
+    if (pinNumber == 20) return _pcf8574_I3.digitalRead(P3) == LOW;
+    if (pinNumber == 21) return _pcf8574_I3.digitalRead(P4) == LOW;
+    if (pinNumber == 22) return _pcf8574_I3.digitalRead(P5) == LOW;
+    if (pinNumber == 23) return _pcf8574_I3.digitalRead(P6) == LOW;
+    if (pinNumber == 24) return _pcf8574_I3.digitalRead(P7) == LOW;
   }
-  if (pinIdx <= 32) {
-    if (pinIdx == 25) return _pcf8574_I4.digitalRead(P0) == HIGH;
-    if (pinIdx == 26) return _pcf8574_I4.digitalRead(P1) == HIGH;
-    if (pinIdx == 27) return _pcf8574_I4.digitalRead(P2) == HIGH;
-    if (pinIdx == 28) return _pcf8574_I4.digitalRead(P3) == HIGH;
-    if (pinIdx == 29) return _pcf8574_I4.digitalRead(P4) == HIGH;
-    if (pinIdx == 30) return _pcf8574_I4.digitalRead(P5) == HIGH;
-    if (pinIdx == 31) return _pcf8574_I4.digitalRead(P6) == HIGH;
-    if (pinIdx == 32) return _pcf8574_I4.digitalRead(P7) == HIGH;
+  if (pinNumber <= 32) {
+    if (pinNumber == 25) return _pcf8574_I4.digitalRead(P0) == LOW;
+    if (pinNumber == 26) return _pcf8574_I4.digitalRead(P1) == LOW;
+    if (pinNumber == 27) return _pcf8574_I4.digitalRead(P2) == LOW;
+    if (pinNumber == 28) return _pcf8574_I4.digitalRead(P3) == LOW;
+    if (pinNumber == 29) return _pcf8574_I4.digitalRead(P4) == LOW;
+    if (pinNumber == 30) return _pcf8574_I4.digitalRead(P5) == LOW;
+    if (pinNumber == 31) return _pcf8574_I4.digitalRead(P6) == LOW;
+    if (pinNumber == 32) return _pcf8574_I4.digitalRead(P7) == LOW;
   }
-  return false;
 }
-bool TA_Chip_KinCony_KC868_A32_R1_2::getDO_fr1_to32(int pinIdx) {
-  if (pinIdx <= 0) {
+bool TA_Chip_KinCony_KC868_A32_R1_2::getDO_fr1_to32(int pinNumber) {
+  if (!isValidPinNumber(pinNumber)) {
     return false;
   }
-  if (pinIdx <= 8) {
-    if (pinIdx == 1) return _pcf8574_R1.digitalRead(P0) == HIGH;
-    if (pinIdx == 2) return _pcf8574_R1.digitalRead(P1) == HIGH;
-    if (pinIdx == 3) return _pcf8574_R1.digitalRead(P2) == HIGH;
-    if (pinIdx == 4) return _pcf8574_R1.digitalRead(P3) == HIGH;
-    if (pinIdx == 5) return _pcf8574_R1.digitalRead(P4) == HIGH;
-    if (pinIdx == 6) return _pcf8574_R1.digitalRead(P5) == HIGH;
-    if (pinIdx == 7) return _pcf8574_R1.digitalRead(P6) == HIGH;
-    if (pinIdx == 8) return _pcf8574_R1.digitalRead(P7) == HIGH;
+  if (pinNumber <= 8) {
+    if (pinNumber == 1) return _pcf8574_R1.digitalRead(P0) == LOW;
+    if (pinNumber == 2) return _pcf8574_R1.digitalRead(P1) == LOW;
+    if (pinNumber == 3) return _pcf8574_R1.digitalRead(P2) == LOW;
+    if (pinNumber == 4) return _pcf8574_R1.digitalRead(P3) == LOW;
+    if (pinNumber == 5) return _pcf8574_R1.digitalRead(P4) == LOW;
+    if (pinNumber == 6) return _pcf8574_R1.digitalRead(P5) == LOW;
+    if (pinNumber == 7) return _pcf8574_R1.digitalRead(P6) == LOW;
+    if (pinNumber == 8) return _pcf8574_R1.digitalRead(P7) == LOW;
   }
-  if (pinIdx <= 16) {
-    if (pinIdx == 9) return _pcf8574_R2.digitalRead(P0) == HIGH;
-    if (pinIdx == 10) return _pcf8574_R2.digitalRead(P1) == HIGH;
-    if (pinIdx == 11) return _pcf8574_R2.digitalRead(P2) == HIGH;
-    if (pinIdx == 12) return _pcf8574_R2.digitalRead(P3) == HIGH;
-    if (pinIdx == 13) return _pcf8574_R2.digitalRead(P4) == HIGH;
-    if (pinIdx == 14) return _pcf8574_R2.digitalRead(P5) == HIGH;
-    if (pinIdx == 15) return _pcf8574_R2.digitalRead(P6) == HIGH;
-    if (pinIdx == 16) return _pcf8574_R2.digitalRead(P7) == HIGH;
+  if (pinNumber <= 16) {
+    if (pinNumber == 9) return _pcf8574_R2.digitalRead(P0) == LOW;
+    if (pinNumber == 10) return _pcf8574_R2.digitalRead(P1) == LOW;
+    if (pinNumber == 11) return _pcf8574_R2.digitalRead(P2) == LOW;
+    if (pinNumber == 12) return _pcf8574_R2.digitalRead(P3) == LOW;
+    if (pinNumber == 13) return _pcf8574_R2.digitalRead(P4) == LOW;
+    if (pinNumber == 14) return _pcf8574_R2.digitalRead(P5) == LOW;
+    if (pinNumber == 15) return _pcf8574_R2.digitalRead(P6) == LOW;
+    if (pinNumber == 16) return _pcf8574_R2.digitalRead(P7) == LOW;
   }
-  if (pinIdx <= 24) {
-    if (pinIdx == 17) return _pcf8574_R3.digitalRead(P0) == HIGH;
-    if (pinIdx == 18) return _pcf8574_R3.digitalRead(P1) == HIGH;
-    if (pinIdx == 19) return _pcf8574_R3.digitalRead(P2) == HIGH;
-    if (pinIdx == 20) return _pcf8574_R3.digitalRead(P3) == HIGH;
-    if (pinIdx == 21) return _pcf8574_R3.digitalRead(P4) == HIGH;
-    if (pinIdx == 22) return _pcf8574_R3.digitalRead(P5) == HIGH;
-    if (pinIdx == 23) return _pcf8574_R3.digitalRead(P6) == HIGH;
-    if (pinIdx == 24) return _pcf8574_R3.digitalRead(P7) == HIGH;
+  if (pinNumber <= 24) {
+    if (pinNumber == 17) return _pcf8574_R3.digitalRead(P0) == LOW;
+    if (pinNumber == 18) return _pcf8574_R3.digitalRead(P1) == LOW;
+    if (pinNumber == 19) return _pcf8574_R3.digitalRead(P2) == LOW;
+    if (pinNumber == 20) return _pcf8574_R3.digitalRead(P3) == LOW;
+    if (pinNumber == 21) return _pcf8574_R3.digitalRead(P4) == LOW;
+    if (pinNumber == 22) return _pcf8574_R3.digitalRead(P5) == LOW;
+    if (pinNumber == 23) return _pcf8574_R3.digitalRead(P6) == LOW;
+    if (pinNumber == 24) return _pcf8574_R3.digitalRead(P7) == LOW;
   }
-  if (pinIdx <= 32) {
-    if (pinIdx == 25) return _pcf8574_R4.digitalRead(P0) == HIGH;
-    if (pinIdx == 26) return _pcf8574_R4.digitalRead(P1) == HIGH;
-    if (pinIdx == 27) return _pcf8574_R4.digitalRead(P2) == HIGH;
-    if (pinIdx == 28) return _pcf8574_R4.digitalRead(P3) == HIGH;
-    if (pinIdx == 29) return _pcf8574_R4.digitalRead(P4) == HIGH;
-    if (pinIdx == 30) return _pcf8574_R4.digitalRead(P5) == HIGH;
-    if (pinIdx == 31) return _pcf8574_R4.digitalRead(P6) == HIGH;
-    if (pinIdx == 32) return _pcf8574_R4.digitalRead(P7) == HIGH;
+  if (pinNumber <= 32) {
+    if (pinNumber == 25) return _pcf8574_R4.digitalRead(P0) == LOW;
+    if (pinNumber == 26) return _pcf8574_R4.digitalRead(P1) == LOW;
+    if (pinNumber == 27) return _pcf8574_R4.digitalRead(P2) == LOW;
+    if (pinNumber == 28) return _pcf8574_R4.digitalRead(P3) == LOW;
+    if (pinNumber == 29) return _pcf8574_R4.digitalRead(P4) == LOW;
+    if (pinNumber == 30) return _pcf8574_R4.digitalRead(P5) == LOW;
+    if (pinNumber == 31) return _pcf8574_R4.digitalRead(P6) == LOW;
+    if (pinNumber == 32) return _pcf8574_R4.digitalRead(P7) == LOW;
   }
-  return false;
 }
-void TA_Chip_KinCony_KC868_A32_R1_2::setDO_fr1_to32(int pinIdx, bool value) {
-  if (pinIdx <= 0) {
-    return;
+bool TA_Chip_KinCony_KC868_A32_R1_2::setDO_fr1_to32(int pinNumber, bool value) {
+  if (!isValidPinNumber(pinNumber)) {
+    return false;
   }
-  if (pinIdx <= 8) {
-    if (pinIdx == 1) _pcf8574_R1.digitalWrite(P6, value ? HIGH : LOW);
-    if (pinIdx == 2) _pcf8574_R1.digitalWrite(P1, value ? HIGH : LOW);
-    if (pinIdx == 3) _pcf8574_R1.digitalWrite(P2, value ? HIGH : LOW);
-    if (pinIdx == 4) _pcf8574_R1.digitalWrite(P3, value ? HIGH : LOW);
-    if (pinIdx == 5) _pcf8574_R1.digitalWrite(P4, value ? HIGH : LOW);
-    if (pinIdx == 6) _pcf8574_R1.digitalWrite(P5, value ? HIGH : LOW);
-    if (pinIdx == 7) _pcf8574_R1.digitalWrite(P6, value ? HIGH : LOW);
-    if (pinIdx == 8) _pcf8574_R1.digitalWrite(P7, value ? HIGH : LOW);
-    return;
+  if (pinNumber <= 8) {
+    if (pinNumber == 1) _pcf8574_R1.digitalWrite(P6, value ? LOW : HIGH);
+    if (pinNumber == 2) _pcf8574_R1.digitalWrite(P1, value ? LOW : HIGH);
+    if (pinNumber == 3) _pcf8574_R1.digitalWrite(P2, value ? LOW : HIGH);
+    if (pinNumber == 4) _pcf8574_R1.digitalWrite(P3, value ? LOW : HIGH);
+    if (pinNumber == 5) _pcf8574_R1.digitalWrite(P4, value ? LOW : HIGH);
+    if (pinNumber == 6) _pcf8574_R1.digitalWrite(P5, value ? LOW : HIGH);
+    if (pinNumber == 7) _pcf8574_R1.digitalWrite(P6, value ? LOW : HIGH);
+    if (pinNumber == 8) _pcf8574_R1.digitalWrite(P7, value ? LOW : HIGH);
+    return true;
   }
-  if (pinIdx <= 16) {
-    if (pinIdx == 9) _pcf8574_R2.digitalWrite(P0, value ? HIGH : LOW);
-    if (pinIdx == 10) _pcf8574_R2.digitalWrite(P1, value ? HIGH : LOW);
-    if (pinIdx == 11) _pcf8574_R2.digitalWrite(P2, value ? HIGH : LOW);
-    if (pinIdx == 12) _pcf8574_R2.digitalWrite(P3, value ? HIGH : LOW);
-    if (pinIdx == 13) _pcf8574_R2.digitalWrite(P4, value ? HIGH : LOW);
-    if (pinIdx == 14) _pcf8574_R2.digitalWrite(P5, value ? HIGH : LOW);
-    if (pinIdx == 15) _pcf8574_R2.digitalWrite(P6, value ? HIGH : LOW);
-    if (pinIdx == 16) _pcf8574_R2.digitalWrite(P7, value ? HIGH : LOW);
-    return;
+  if (pinNumber <= 16) {
+    if (pinNumber == 9) _pcf8574_R2.digitalWrite(P0, value ? LOW : HIGH);
+    if (pinNumber == 10) _pcf8574_R2.digitalWrite(P1, value ? LOW : HIGH);
+    if (pinNumber == 11) _pcf8574_R2.digitalWrite(P2, value ? LOW : HIGH);
+    if (pinNumber == 12) _pcf8574_R2.digitalWrite(P3, value ? LOW : HIGH);
+    if (pinNumber == 13) _pcf8574_R2.digitalWrite(P4, value ? LOW : HIGH);
+    if (pinNumber == 14) _pcf8574_R2.digitalWrite(P5, value ? LOW : HIGH);
+    if (pinNumber == 15) _pcf8574_R2.digitalWrite(P6, value ? LOW : HIGH);
+    if (pinNumber == 16) _pcf8574_R2.digitalWrite(P7, value ? LOW : HIGH);
   }
-  if (pinIdx <= 24) {
-    if (pinIdx == 17) _pcf8574_R3.digitalWrite(P0, value ? HIGH : LOW);
-    if (pinIdx == 18) _pcf8574_R3.digitalWrite(P1, value ? HIGH : LOW);
-    if (pinIdx == 19) _pcf8574_R3.digitalWrite(P2, value ? HIGH : LOW);
-    if (pinIdx == 20) _pcf8574_R3.digitalWrite(P3, value ? HIGH : LOW);
-    if (pinIdx == 21) _pcf8574_R3.digitalWrite(P4, value ? HIGH : LOW);
-    if (pinIdx == 22) _pcf8574_R3.digitalWrite(P5, value ? HIGH : LOW);
-    if (pinIdx == 23) _pcf8574_R3.digitalWrite(P6, value ? HIGH : LOW);
-    if (pinIdx == 24) _pcf8574_R3.digitalWrite(P7, value ? HIGH : LOW);
-    return;
+  if (pinNumber <= 24) {
+    if (pinNumber == 17) _pcf8574_R3.digitalWrite(P0, value ? LOW : HIGH);
+    if (pinNumber == 18) _pcf8574_R3.digitalWrite(P1, value ? LOW : HIGH);
+    if (pinNumber == 19) _pcf8574_R3.digitalWrite(P2, value ? LOW : HIGH);
+    if (pinNumber == 20) _pcf8574_R3.digitalWrite(P3, value ? LOW : HIGH);
+    if (pinNumber == 21) _pcf8574_R3.digitalWrite(P4, value ? LOW : HIGH);
+    if (pinNumber == 22) _pcf8574_R3.digitalWrite(P5, value ? LOW : HIGH);
+    if (pinNumber == 23) _pcf8574_R3.digitalWrite(P6, value ? LOW : HIGH);
+    if (pinNumber == 24) _pcf8574_R3.digitalWrite(P7, value ? LOW : HIGH);
   }
-  if (pinIdx <= 32) {
-    if (pinIdx == 25) _pcf8574_R4.digitalWrite(P0, value ? HIGH : LOW);
-    if (pinIdx == 26) _pcf8574_R4.digitalWrite(P1, value ? HIGH : LOW);
-    if (pinIdx == 27) _pcf8574_R4.digitalWrite(P2, value ? HIGH : LOW);
-    if (pinIdx == 28) _pcf8574_R4.digitalWrite(P3, value ? HIGH : LOW);
-    if (pinIdx == 29) _pcf8574_R4.digitalWrite(P4, value ? HIGH : LOW);
-    if (pinIdx == 30) _pcf8574_R4.digitalWrite(P5, value ? HIGH : LOW);
-    if (pinIdx == 31) _pcf8574_R4.digitalWrite(P6, value ? HIGH : LOW);
-    if (pinIdx == 32) _pcf8574_R4.digitalWrite(P7, value ? HIGH : LOW);
-    return;
+  if (pinNumber <= 32) {
+    if (pinNumber == 25) _pcf8574_R4.digitalWrite(P0, value ? LOW : HIGH);
+    if (pinNumber == 26) _pcf8574_R4.digitalWrite(P1, value ? LOW : HIGH);
+    if (pinNumber == 27) _pcf8574_R4.digitalWrite(P2, value ? LOW : HIGH);
+    if (pinNumber == 28) _pcf8574_R4.digitalWrite(P3, value ? LOW : HIGH);
+    if (pinNumber == 29) _pcf8574_R4.digitalWrite(P4, value ? LOW : HIGH);
+    if (pinNumber == 30) _pcf8574_R4.digitalWrite(P5, value ? LOW : HIGH);
+    if (pinNumber == 31) _pcf8574_R4.digitalWrite(P6, value ? LOW : HIGH);
+    if (pinNumber == 32) _pcf8574_R4.digitalWrite(P7, value ? LOW : HIGH);
   }
-  return;
+  return true;
 }
 void TA_Chip_KinCony_KC868_A32_R1_2::setup() {
   for (int i = 0; i <= 7; i++) {
@@ -329,35 +333,35 @@ void TA_Chip_KinCony_KC868_A32_R1_2::setup() {
     _pcf8574_R4.pinMode(i, OUTPUT);
   }
   String error = F("ERROR_pcf8574_");
-  if (_pcf8574_I1.begin() == false) {
+  if (!_pcf8574_I1.begin()) {
     Serial.print(error);
     Serial.println(F("I1"));
   }
-  if (_pcf8574_I2.begin() == false) {
+  if (!_pcf8574_I2.begin()) {
     Serial.print(error);
     Serial.println(F("I2"));
   }
-  if (_pcf8574_I3.begin() == false) {
+  if (!_pcf8574_I3.begin()) {
     Serial.print(error);
     Serial.println(F("I3"));
   }
-  if (_pcf8574_I4.begin() == false) {
+  if (!_pcf8574_I4.begin()) {
     Serial.print(error);
     Serial.println(F("I4"));
   }
-  if (_pcf8574_R1.begin() == false) {
+  if (!_pcf8574_R1.begin()) {
     Serial.print(error);
     Serial.println(F("R1"));
   }
-  if (_pcf8574_R2.begin() == false) {
+  if (!_pcf8574_R2.begin()) {
     Serial.print(error);
     Serial.println(F("R2"));
   }
-  if (_pcf8574_R3.begin() == false) {
+  if (!_pcf8574_R3.begin()) {
     Serial.print(error);
     Serial.println(F("R3"));
   }
-  if (_pcf8574_R4.begin() == false) {
+  if (!_pcf8574_R4.begin()) {
     Serial.print(error);
     Serial.println(F("R4"));
   }
@@ -377,12 +381,7 @@ TA_Chip_KinCony_KC868_A32_R1_2 chip;
 void setup() {
   serial.setup();
   chip.setup();
-
-  Serial.print(F("Chip.name: "));
-  Serial.print(chip.name());
-  Serial.print(F("\n"));
-
-  Serial.println(F("type hello"));
+  delay(20);
 }
 
 //THREAD
@@ -430,6 +429,11 @@ void forEach(String command) {
     return;
   }
   int pinNumber = pinNumberName.toInt();
+  if (!chip.isValidPinNumber(pinNumber)) {
+    Serial.print(F("ERROR_CMD_PIN_NUMBER_NOT_VALID_NUMBER: "));
+    Serial.println(command);
+    return;
+  }
 
   //IF COMMAND DO_GET
   if (cmdName.equals("!DO_GET")) {
@@ -450,14 +454,13 @@ void forEach(String command) {
   if (cmdName.equals("!DO_SET_TRUE")) {
     chip.setDO_fr1_to32(pinNumber, true);
     Serial.print(command);
-    Serial.println(F("-> DONE"));
+    Serial.println(chip.setDO_fr1_to32(pinNumber, true) ? F("->DONE") : F("->SKIPPED"));
     return;
   }
 
   if (cmdName.equals("!DO_SET_FALSE")) {
-    chip.setDO_fr1_to32(pinNumber, false);
     Serial.print(command);
-    Serial.println(F("-> DONE"));
+    Serial.println(chip.setDO_fr1_to32(pinNumber, false) ? F("->DONE") : F("->SKIPPED"));
     return;
   }
 

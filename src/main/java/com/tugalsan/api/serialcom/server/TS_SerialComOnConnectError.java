@@ -15,7 +15,11 @@ public class TS_SerialComOnConnectError {
         return new TS_SerialComOnConnectError(onSetupError, connectError);
     }
 
-    public TS_SerialComOnReply onReply(TGS_ExecutableType1<String> reply) {
+    public TS_SerialComOnReply onReply_useCustomMessageBroker(TGS_ExecutableType1<String> reply) {
         return TS_SerialComOnReply.of(this, reply);
+    }
+
+    public TS_SerialComOnReply onReply_useDefaultMessageBroker(int defaultMessageBrokerMessageSize) {
+        return TS_SerialComOnReply.of(this, defaultMessageBrokerMessageSize);
     }
 }
