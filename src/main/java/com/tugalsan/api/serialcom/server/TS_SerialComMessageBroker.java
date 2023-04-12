@@ -47,13 +47,12 @@ public class TS_SerialComMessageBroker {
                 d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#3");
             }
             d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#4");
-            replies.removeAll(reply);
-            d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#5");
             return reply;
         };
         d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "will use TS_ThreadRunAllUntilFirstFail...");
         var run = TS_ThreadRunAllUntilFirstFail.of(Duration.ofSeconds(2), callableReply);
         d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "usage of TS_ThreadRunAllUntilFirstFail successful");
+        replies.removeAll(val -> val.contains(command));
         if (run.resultsNotNull.isEmpty()) {
             run.exceptions.forEach(e -> d.ct("send->" + command, e));
             return null;
