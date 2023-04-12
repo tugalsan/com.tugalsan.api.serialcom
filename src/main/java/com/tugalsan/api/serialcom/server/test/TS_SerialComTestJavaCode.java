@@ -54,7 +54,7 @@ public class TS_SerialComTestJavaCode {
                         .onPortError(() -> d.ce("onPortError", "what2do?"))
                         .onSetupError(() -> d.ce("onSetupError", "what2do?"))
                         .onConnectError(() -> d.ce("onConnectError", "what2do?"))
-                        .onReply_useDefaultMessageBroker(10)
+                        .onReply_useDefaultMessageBroker_withMaxMessageCount(10)
                         .onSuccess_useAndClose_defaultMessageBroker((con, mb) -> {
                             d.cr("with broker", "#0");
                             var cmd = TS_SerialComTestKinConyKC868_A32_R1_2.chipName();

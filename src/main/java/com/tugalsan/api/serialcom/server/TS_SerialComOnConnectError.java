@@ -19,7 +19,7 @@ public class TS_SerialComOnConnectError {
         return TS_SerialComOnReply.of(this, reply);
     }
 
-    public TS_SerialComOnReply onReply_useDefaultMessageBroker(int defaultMessageBrokerMessageSize) {
+    public TS_SerialComOnReply onReply_useDefaultMessageBroker_withMaxMessageCount(int defaultMessageBrokerMessageSize) {
         return TS_SerialComOnReply.of(this, defaultMessageBrokerMessageSize);
     }
 }
