@@ -31,7 +31,7 @@ public class TS_SerialComMessageBroker {
         replies.cropToLengthFast(maxSize);
     }
 
-    public String send(int maxDurationSecond, String command) {
+    public String sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, int maxDurationSecond) {
         if (!con.send(command)) {
             d.ce("send", "error", command);
             return null;
