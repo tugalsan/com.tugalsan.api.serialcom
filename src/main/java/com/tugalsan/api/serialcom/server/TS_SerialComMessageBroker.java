@@ -31,6 +31,7 @@ public class TS_SerialComMessageBroker {
         replies.cropToLengthFast(maxSize);
     }
 
+    @Deprecated //TODO Not wokig, try using virtual thread and some timer.
     public String sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, int maxDurationSecond) {
         if (!con.send(command)) {
             d.ce("send", "error", command);
