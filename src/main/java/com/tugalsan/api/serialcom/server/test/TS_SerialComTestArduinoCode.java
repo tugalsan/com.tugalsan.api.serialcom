@@ -7,7 +7,7 @@ public class TS_SerialComTestArduinoCode {
     
     
     /* 
-  bool INFO = false;
+ bool INFO_TA_SerialCommandHandler = false;
 
 //USAGE: stringUtils.isInt("ad") -> true/false
 class TA_StringUtils {
@@ -393,12 +393,14 @@ public:
   void setup();
   void loop(unsigned int currentTime);
   void forEach(String command);
+  int timerDuration[32];
 private:
   bool _IfCommandNotValid(String command);
   bool _IfThereIsNoNextToken(TA_StringTokenizer tokens, String command, String errorLabel);
   bool _IfCommand_chipName(String command, String cmdName);
   bool _IfCommand_DIGetAll(String command, String cmdName);
   bool _IfCommand_DOGetAll(String command, String cmdName);
+  bool _IfCommand_TimerGetAll(String command, String cmdName);
   bool _IfCommand_DOSetAllTrue(String command, String cmdName);
   bool _IfCommand_DOSetAllFalse(String command, String cmdName);
   bool _isNotValidPinNumber(String command, String pinNumberName, String errorConversion, String errorChipNotCompatible);
@@ -407,6 +409,7 @@ private:
   bool _IfCommand_DOSetIdxTrue(String command, String cmdName, int pinNumber);
   bool _IfCommand_DOSetIdxFalse(String command, String cmdName, int pinNumber);
   bool _isNotValidInt(String command, String integerName, String errorLabel);
+  bool _IfCommand_TimerSetIdx(String command, String cmdName, int pinNumber, int duration);
   bool _IfCommand_DOSetIdxTrueUntil(String command, String cmdName, int pinNumber, int duration, int gap, int count);
   void _error(String command, String errorLabel);
   unsigned long _oscillateStart[32];
@@ -415,6 +418,18 @@ private:
   int _oscillateCount[32];
 };
 TA_SerialCommandHandler::TA_SerialCommandHandler() {
+  for (int i = 0; i < 32; i++) timerDuration[i] = 5;
+}
+bool TA_SerialCommandHandler::_IfCommand_TimerSetIdx(String command, String cmdName, int pinNumber, int duration) {
+  Serial.println("testing...");
+  if (!cmdName.equals("!TIMER_SET_IDX")) {
+    return false;
+  }
+  Serial.print(F("REPLY_OF:"));
+  Serial.print(command);
+  Serial.println(F("->DONE"));
+  timerDuration[pinNumber - 1] = duration;
+  return true;
 }
 bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrueUntil(String command, String cmdName, int pinNumber, int duration, int gap, int count) {
   Serial.println("testing...");
@@ -425,8 +440,8 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrueUntil(String command, Strin
   Serial.print(command);
   Serial.println(F("->DONE"));
   _oscillateStart[pinNumber - 1] = timeUtils.current();
-  _oscillateDuration[pinNumber - 1] = duration;
-  _oscillateGap[pinNumber - 1] = gap;
+  _oscillateDuration[pinNumber - 1] = duration * 1000;
+  _oscillateGap[pinNumber - 1] = gap * 1000;
   _oscillateCount[pinNumber - 1] = count;
   return true;
 }
@@ -466,8 +481,22 @@ bool TA_SerialCommandHandler::_IfCommand_chipName(String command, String cmdName
   Serial.println(chip.name());
   return true;
 }
+bool TA_SerialCommandHandler::_IfCommand_TimerGetAll(String command, String cmdName) {
+  if (!cmdName.equals("!TIMER_GET_ALL")) {
+    return false;
+  }
+  Serial.print(F("REPLY_OF:"));
+  Serial.print(command);
+  Serial.print(F("->"));
+  for (int i = 1; i <= 32; i++) {
+    Serial.print(timerDuration[i]);
+    Serial.print(F(" "));
+  }
+  Serial.println(F(""));
+  return true;
+}
 bool TA_SerialCommandHandler::_IfCommand_DIGetAll(String command, String cmdName) {
-  if (!cmdName.equals("!DI_GET_ALL")) {
+  if (!cmdName.equals("!TIMER_GET_ALL")) {
     return false;
   }
   Serial.print(F("REPLY_OF:"));
@@ -501,7 +530,11 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetAllTrue(String command, String cmd
   Serial.print(F("->"));
   bool result = true;
   for (int i = 1; i <= 32; i++) {
-    result = result && chip.setDO_fr1_to32(i, true);
+    bool innerResult = chip.setDO_fr1_to32(i, true);
+    if (innerResult) {
+      _oscillateCount[i - 1] = 0;
+    }
+    result = result && innerResult;
   }
   Serial.println(result ? F("->DONE") : F("->SKIPPED"));
   return true;
@@ -568,7 +601,12 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetIdxFalse(String command, String cm
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.print(F("->"));
-  Serial.println(chip.setDO_fr1_to32(pinNumber, false) ? F("DONE") : F("SKIPPED"));
+  if (chip.setDO_fr1_to32(pinNumber, false)) {
+    Serial.println(F("DONE"));
+    _oscillateCount[pinNumber - 1] = 0;
+  } else {
+    Serial.println(F("SKIPPED"));
+  }
   return true;
 }
 bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrue(String command, String cmdName, int pinNumber) {
@@ -578,7 +616,12 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrue(String command, String cmd
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.print(F("->"));
-  Serial.println(chip.setDO_fr1_to32(pinNumber, true) ? F("DONE") : F("SKIPPED"));
+  if (chip.setDO_fr1_to32(pinNumber, true)) {
+    Serial.println(F("DONE"));
+    _oscillateCount[pinNumber - 1] = 0;
+  } else {
+    Serial.println(F("SKIPPED"));
+  }
   return true;
 }
 void TA_SerialCommandHandler::loop(unsigned int currentTime) {
@@ -587,11 +630,11 @@ void TA_SerialCommandHandler::loop(unsigned int currentTime) {
       continue;
     }
     bool pinState = chip.getDO_fr1_to32(i + 1);
-    int period = _oscillateDuration[i] + _oscillateGap[i];
-    int wholeDuration = period * _oscillateCount[i];
-    int deltaDuration = currentTime - _oscillateStart[i];
-    if (INFO) {
-      Serial.print("INFO: OSCILLATE_CALC_PIN: ");
+    unsigned long period = _oscillateDuration[i] + _oscillateGap[i];
+    unsigned long wholeDuration = period * _oscillateCount[i];
+    unsigned long deltaDuration = currentTime - _oscillateStart[i];
+    if (INFO_TA_SerialCommandHandler) {
+      Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_CALC_PIN: ");
       Serial.print(i + 1);
       Serial.print(", cur:");
       Serial.print(currentTime);
@@ -609,8 +652,8 @@ void TA_SerialCommandHandler::loop(unsigned int currentTime) {
       Serial.println(deltaDuration);
     }
     if (deltaDuration > wholeDuration) {
-      if (INFO) {
-        Serial.print("INFO: OSCILLATE_RESET_PIN: ");
+      if (INFO_TA_SerialCommandHandler) {
+        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_RESET_PIN: ");
         Serial.println(i + 1);
       }
       _oscillateCount[i] = 0;
@@ -620,27 +663,27 @@ void TA_SerialCommandHandler::loop(unsigned int currentTime) {
       continue;
     }
     while (deltaDuration > period) {
-      if (INFO) {
-        Serial.print("INFO: OSCILLATE_DELTA_DURATION_SHORTENED: ");
+      if (INFO_TA_SerialCommandHandler) {
+        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_DELTA_DURATION_SHORTENED: ");
         Serial.println(i + 1);
       }
       deltaDuration -= period;
     }
-    if (INFO) {
-      Serial.print("INFO: deltaDuration.short:");
+    if (INFO_TA_SerialCommandHandler) {
+      Serial.print("INFO_TA_SerialCommandHandler: deltaDuration.short:");
       Serial.println(deltaDuration);
     }
     if (deltaDuration < _oscillateDuration[i] && !pinState) {
-      if (INFO) {
-        Serial.print("INFO: OSCILLATE_PIN_SET_TRUE: ");
+      if (INFO_TA_SerialCommandHandler) {
+        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_PIN_SET_TRUE: ");
         Serial.println(i + 1);
       }
       chip.setDO_fr1_to32(i + 1, true);
       continue;
     }
     if (deltaDuration > _oscillateDuration[i] && pinState) {
-      if (INFO) {
-        Serial.print("INFO: OSCILLATE_PIN_SET_FALSE: ");
+      if (INFO_TA_SerialCommandHandler) {
+        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_PIN_SET_FALSE: ");
         Serial.println(i + 1);
       }
       chip.setDO_fr1_to32(i + 1, false);
@@ -663,19 +706,22 @@ void TA_SerialCommandHandler::setup() {
   Serial.println(F("USAGE: setDigitalOutIdxTrue as (cmd, pin1-32) ex: !DO_SET_IDX_TRUE 1"));
   Serial.println(F("USAGE: setDigitalOutIdxFalse as (cmd, pin1-32) ex: !DO_SET_IDX_FALSE 1"));
   Serial.println(F("USAGE: DIGITAL OUT OSCILLATE---------------------------"));
-  Serial.println(F("USAGE: setDigitalOutOscillating as (cmd, pin1-32, msDuration, msGap, count) ex: !DO_SET_IDX_TRUE_UNTIL 12 2000 1000 5"));
-  Serial.println(F("USAGE: END---------------------------------------------"));
+  Serial.println(F("USAGE: setDigitalOutOscillating as (cmd, pin1-32, secDuration, secGap, count) ex: !DO_SET_IDX_TRUE_UNTIL 12 2 1 5"));
+  Serial.println(F("USAGE: TIMER-------------------------------------------"));
+  Serial.println(F("USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_GET_ALL"));
+  Serial.println(F("USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_SET_IDX 5"));
 }
 void TA_SerialCommandHandler::forEach(String command) {
   if (_IfCommandNotValid(command)) return;
   TA_StringTokenizer tokens(command, F(" "));
   if (_IfThereIsNoNextToken(tokens, command, F("ERROR_CMD_UNCOMPLETE"))) return;
   String cmdName = tokens.nextToken();
-  if (INFO) {
-    Serial.print("INFO:cmdName:");
+  if (INFO_TA_SerialCommandHandler) {
+    Serial.print("INFO_TA_SerialCommandHandler:cmdName:");
     Serial.println(cmdName);
   }
   if (_IfCommand_chipName(command, cmdName)) return;
+  if (_IfCommand_TimerGetAll(command, cmdName)) return;
   if (_IfCommand_DIGetAll(command, cmdName)) return;
   if (_IfCommand_DOGetAll(command, cmdName)) return;
   if (_IfCommand_DOSetAllTrue(command, cmdName)) return;
@@ -684,8 +730,8 @@ void TA_SerialCommandHandler::forEach(String command) {
   String pinNumberName = tokens.nextToken();
   if (_isNotValidPinNumber(command, pinNumberName, "ERROR_CMD_PIN_NAME_NOT_NUMBER", "ERROR_CMD_PIN_NUMBER_NOT_VALID_NUMBER")) return;
   int pinNumber = pinNumberName.toInt();
-  if (INFO) {
-    Serial.print("INFO:pinNumber:");
+  if (INFO_TA_SerialCommandHandler) {
+    Serial.print("INFO_TA_SerialCommandHandler:pinNumber:");
     Serial.println(pinNumber);
   }
   if (_IfCommand_DIGetIdx(command, cmdName, pinNumber)) return;
@@ -696,30 +742,48 @@ void TA_SerialCommandHandler::forEach(String command) {
   String durationName = tokens.nextToken();
   if (_isNotValidInt(command, durationName, F("ERROR_CMD_DURATION_NAME_NOT_NUMBER"))) return;
   int duration = durationName.toInt();
-  if (INFO) {
-    Serial.print("INFO:duration:");
+  if (INFO_TA_SerialCommandHandler) {
+    Serial.print("INFO_TA_SerialCommandHandler:duration:");
     Serial.println(duration);
   }
+  if (_IfCommand_TimerSetIdx(command, cmdName, pinNumber, duration)) return;
   if (_IfThereIsNoNextToken(tokens, command, F("ERROR_CMD_GAP_NAME_UNCOMPLETE"))) return;
   String gapName = tokens.nextToken();
   if (_isNotValidInt(command, gapName, F("ERROR_CMD_GAP_NAME_NOT_NUMBER"))) return;
   int gap = gapName.toInt();
-  if (INFO) {
-    Serial.print("INFO:gap:");
+  if (INFO_TA_SerialCommandHandler) {
+    Serial.print("INFO_TA_SerialCommandHandler:gap:");
     Serial.println(gap);
   }
   if (_IfThereIsNoNextToken(tokens, command, F("ERROR_CMD_COUNT_NAME_UNCOMPLETE"))) return;
   String countName = tokens.nextToken();
   if (_isNotValidInt(command, countName, F("ERROR_CMD_COUNT_NAME_NOT_NUMBER"))) return;
   int count = countName.toInt();
-  if (INFO) {
-    Serial.print("INFO:count:");
+  if (INFO_TA_SerialCommandHandler) {
+    Serial.print("INFO_TA_SerialCommandHandler:count:");
     Serial.println(count);
   }
   if (_IfCommand_DOSetIdxTrueUntil(command, cmdName, pinNumber, duration, gap, count)) return;
   _error(command, F("ERROR_CMD_NOT_SUPPORTED"));
 }
 TA_SerialCommandHandler serialCommandHandler;
+
+//DI 0, 2, 4...32: manual start(with timer)/stop(stop the alarm)
+//DI 1, 3, 5...31: sensor that detect sth in the bath
+//DO 0, 2, 4...32: timer is running
+//DO 1, 3, 5...31: alarm until [stop triggered] or [sth not in the bath anymore]
+//TODO
+class TA_DIAutomation_SurfaceTreatmentBath16 {
+public:
+  TA_DIAutomation_SurfaceTreatmentBath16();
+  void loop();
+private:
+};
+TA_DIAutomation_SurfaceTreatmentBath16::TA_DIAutomation_SurfaceTreatmentBath16() {
+}
+void TA_DIAutomation_SurfaceTreatmentBath16::loop() {
+}
+TA_DIAutomation_SurfaceTreatmentBath16 surfaceThreatmentBath;
 
 //ARDUINO_MAIN
 void setup() {
@@ -734,8 +798,10 @@ void loop() {
   timeUtils.loop();
   serialCommandHandler.loop(timeUtils.current());
   if (serialCommandFetcher.hasNext()) serialCommandHandler.forEach(serialCommandFetcher.next());
+  surfaceThreatmentBath.loop();
   delay(20);
 }
+
 
 
      */
