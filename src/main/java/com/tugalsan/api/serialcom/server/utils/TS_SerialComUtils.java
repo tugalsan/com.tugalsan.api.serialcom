@@ -2,7 +2,7 @@ package com.tugalsan.api.serialcom.server.utils;
 
 import com.fazecast.jSerialComm.*;
 import com.tugalsan.api.coronator.client.TGS_Coronator;
-import com.tugalsan.api.executable.client.*;
+import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.*;
@@ -64,7 +64,7 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    public static TS_ThreadExecutable connect(SerialPort serialPort, TGS_ExecutableType1<String> onReply) {
+    public static TS_ThreadExecutable connect(SerialPort serialPort, TGS_RunnableType1<String> onReply) {
         d.ci("connect", "onReply", onReply != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
@@ -114,7 +114,7 @@ public class TS_SerialComUtils {
                 }
                 //PROCESS FIRST CMD
                 var firstCommand = buffer.substring(0, idx).replace("\r", "");
-                onReply.execute(firstCommand);
+                onReply.run(firstCommand);
                 //REMOVE FIRST CMD FROM BUFFER
                 var leftOver = buffer.length() == idx + 1
                         ? ""
@@ -133,9 +133,9 @@ public class TS_SerialComUtils {
             }
 
             @Override
-            public void execute() {
+            public void run() {
                 while (!killMe) {
-                    TGS_UnSafe.execute(() -> {
+                    TGS_UnSafe.run(() -> {
                         waitForNewData();
                         appendToBuffer();
                         processBuffer();

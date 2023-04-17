@@ -1,7 +1,7 @@
 package com.tugalsan.api.serialcom.server;
 
 import com.fazecast.jSerialComm.*;
-import com.tugalsan.api.executable.client.*;
+import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.utils.*;
 import com.tugalsan.api.thread.server.TS_ThreadExecutable;
@@ -52,27 +52,27 @@ public class TS_SerialComConnection implements AutoCloseable {
         this.port = onReply.onConnectError.onSetupError.onPortError.parity.stopBits.dataBits.baudRate.port.serialPort;
         if (!successfulPort()) {
             d.ce("constructor", "error detected", "!successfulPort");
-            onReply.onConnectError.onSetupError.onPortError.portError.execute();
+            onReply.onConnectError.onSetupError.onPortError.portError.run();
             return;
         }
         //BIND SETUP
         this.successfulSetup = TS_SerialComUtils.setup(port, baudRate, dataBits, stopBits, parity);
         if (!successfulSetup()) {
             d.ce("constructor", "error detected", "!successfulSetup");
-            onReply.onConnectError.onSetupError.setupError.execute();
+            onReply.onConnectError.onSetupError.setupError.run();
             return;
         }
         //CONNECT AND BIND REPLY
         this.threadReply = TS_SerialComUtils.connect(port, this.onReply);
         if (!successfulConnect()) {
             d.ce("constructor", "error detected", "!successfulConnect");
-            onReply.onConnectError.connectError.execute();
+            onReply.onConnectError.connectError.run();
             return;
         }
     }
     final private TS_SerialComMessageBroker messageBroker;
     private TS_ThreadExecutable threadReply;
-    final public TGS_ExecutableType1<String> onReply;
+    final public TGS_RunnableType1<String> onReply;
     final public String parityName;
     final public String stopBitsName;
     final public int dataBits;
@@ -100,13 +100,13 @@ public class TS_SerialComConnection implements AutoCloseable {
         return TS_SerialComUtils.send(port, command);
     }
 
-    public boolean useAndClose_WithDefaultMessageBroker(TGS_ExecutableType2<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
+    public boolean useAndClose_WithDefaultMessageBroker(TGS_RunnableType2<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
         try {
             if (!isConnected()) {
                 d.ce("useAndClose", "Error on not connected");
                 return false;
             }
-            con_mb.execute(this, messageBroker);
+            con_mb.run(this, messageBroker);
         } catch (Exception e) {
             d.ct("useAndClose", e);
             return false;
@@ -116,13 +116,13 @@ public class TS_SerialComConnection implements AutoCloseable {
         return true;
     }
 
-    public boolean useAndClose_WithCustomMessageBroker(TGS_ExecutableType1<TS_SerialComConnection> con) {
+    public boolean useAndClose_WithCustomMessageBroker(TGS_RunnableType1<TS_SerialComConnection> con) {
         try {
             if (!isConnected()) {
                 d.ce("useAndClose", "Error on not connected");
                 return false;
             }
-            con.execute(this);
+            con.run(this);
         } catch (Exception e) {
             d.ct("useAndClose", e);
             return false;

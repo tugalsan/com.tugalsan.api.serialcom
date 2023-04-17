@@ -1,6 +1,6 @@
 package com.tugalsan.api.serialcom.server.test.chip;
 
-import com.tugalsan.api.compiler.client.TGS_CompilerType1;
+import com.tugalsan.api.callable.client.TGS_CallableType1;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.TS_SerialComBuilder;
 import com.tugalsan.api.serialcom.server.TS_SerialComMessageBroker;
@@ -47,7 +47,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2 {
         return new TS_SerialComChip_KinConyKC868_A32_R1_2(mb, timeout);
     }
 
-    public static String call(TGS_CompilerType1<String, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
+    public static String call(TGS_CallableType1<String, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
         var brokerSize = 10;
         var duration = Duration.ofSeconds(10);
         var result = new Object() {
@@ -61,7 +61,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2 {
                 .onReply_useDefaultMessageBroker_withMaxMessageCount(brokerSize)
                 .onSuccess_useAndClose_defaultMessageBroker((con, mb) -> {
                     var chipDriver = TS_SerialComChip_KinConyKC868_A32_R1_2.of(mb, duration);
-                    result.value = chip.compile(chipDriver);
+                    result.value = chip.call(chipDriver);
                 });
         return result.value;
     }
