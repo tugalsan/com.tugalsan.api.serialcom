@@ -32,7 +32,7 @@ public class TS_SerialComMessageBroker {
         replies.cropToLengthFast(maxSize);
     }
 
-    public String sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, int maxDurationSecond) {
+    public String sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, Duration maxDuration) {
         if (!con.send(command)) {
             d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_SENDING");
             return null;
@@ -45,11 +45,11 @@ public class TS_SerialComMessageBroker {
             }
             return reply;
         };
-        var run = TS_ThreadRunAllUntilFirstFail.of(Duration.ofSeconds(2), callableReply);
+        var run = TS_ThreadRunAllUntilFirstFail.of(maxDuration, callableReply);
         replies.removeAll(val -> val.contains(command));
         if (run.resultsNotNull.isEmpty()) {
             run.exceptions.forEach(e -> {
-                if (e instanceof TS_ThreadRunAllTimeoutException ei) {
+                if (e instanceof TS_ThreadRunAllTimeoutException) {
                     d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
                     return;
                 }
