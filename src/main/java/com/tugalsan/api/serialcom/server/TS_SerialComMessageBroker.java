@@ -45,7 +45,7 @@ public class TS_SerialComMessageBroker {
             }
             return reply;
         };
-        var run = TS_ThreadCall.parallelUntilFirstFail(maxDuration, callableReply);
+        var run = TS_ThreadCall.single(maxDuration, callableReply);
         replies.removeAll(val -> val.contains(command));
         if (run.resultsForSuccessfulOnes.isEmpty()) {
             run.exceptions.forEach(e -> {
