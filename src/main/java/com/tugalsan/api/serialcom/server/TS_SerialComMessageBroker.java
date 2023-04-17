@@ -1,6 +1,7 @@
 package com.tugalsan.api.serialcom.server;
 
 import com.tugalsan.api.log.server.TS_Log;
+import com.tugalsan.api.thread.server.TS_ThreadRunAllTimeoutException;
 import com.tugalsan.api.thread.server.TS_ThreadRunAllUntilFirstFail;
 import com.tugalsan.api.thread.server.TS_ThreadSafeLst;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
@@ -31,34 +32,31 @@ public class TS_SerialComMessageBroker {
         replies.cropToLengthFast(maxSize);
     }
 
-    @Deprecated //TODO Not wokig, try using virtual thread and some timer.
     public String sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, int maxDurationSecond) {
         if (!con.send(command)) {
-            d.ce("send", "error", command);
+            d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_SENDING");
             return null;
         }
         Callable<String> callableReply = () -> {
-            d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#0");
             String reply = null;
             while (reply == null) {
-                d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#1");
                 reply = replies.findFirst(val -> val.contains(command));
-                d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#2");
                 TS_ThreadWait.of(Duration.ofSeconds(1));
-                d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#3");
             }
-            d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "callableReply", "#4");
             return reply;
         };
-        d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "will use TS_ThreadRunAllUntilFirstFail...");
         var run = TS_ThreadRunAllUntilFirstFail.of(Duration.ofSeconds(2), callableReply);
-        d.ci("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "usage of TS_ThreadRunAllUntilFirstFail successful");
         replies.removeAll(val -> val.contains(command));
         if (run.resultsNotNull.isEmpty()) {
-            run.exceptions.forEach(e -> d.ct("send->" + command, e));
+            run.exceptions.forEach(e -> {
+                if (e instanceof TS_ThreadRunAllTimeoutException ei) {
+                    d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
+                    return;
+                }
+                d.ct("sendTheCommand_and_fetchMeReplyInMaxSecondsOf->" + command, e);
+            });
             return null;
         }
-        d.cr("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", "#2");
         return run.resultsNotNull.get(0);
     }
 
