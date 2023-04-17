@@ -1,10 +1,10 @@
 package com.tugalsan.api.serialcom.server;
 
 import com.tugalsan.api.log.server.TS_Log;
-import com.tugalsan.api.thread.server.TS_ThreadRun;
+import com.tugalsan.api.thread.server.TS_ThreadCall;
 import com.tugalsan.api.thread.server.TS_ThreadSafeLst;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
-import com.tugalsan.api.thread.server.core.TS_ThreadRunParallelTimeoutException;
+import com.tugalsan.api.thread.server.core.TS_ThreadCallParallelTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.Callable;
 
@@ -45,11 +45,11 @@ public class TS_SerialComMessageBroker {
             }
             return reply;
         };
-        var run = TS_ThreadRun.parallelUntilFirstFail(maxDuration, callableReply);
+        var run = TS_ThreadCall.parallelUntilFirstFail(maxDuration, callableReply);
         replies.removeAll(val -> val.contains(command));
         if (run.resultsForSuccessfulOnes.isEmpty()) {
             run.exceptions.forEach(e -> {
-                if (e instanceof TS_ThreadRunParallelTimeoutException) {
+                if (e instanceof TS_ThreadCallParallelTimeoutException) {
                     d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
                     return;
                 }
