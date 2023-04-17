@@ -1,6 +1,6 @@
-package com.tugalsan.api.serialcom.server.test;
+package com.tugalsan.api.serialcom.server.test.chip;
 
-public class TS_SerialComTestArduinoCode {
+public class TS_SerialComChip_KinConyKC868_A32_R1_2ArduinoCode {
     /* TODO
         - WRITE A TUTORIAL HOW TO SETUP ANDROID    
         - WRITE CLASS TA_DIHandler_SurfaceTreatmentBath16
@@ -529,7 +529,7 @@ bool TA_SerialCommandHandler::_IfCommand_TimerGetAll(String command, String cmdN
   return true;
 }
 bool TA_SerialCommandHandler::_IfCommand_DIGetAll(String command, String cmdName) {
-  if (!cmdName.equals("!TIMER_GET_ALL")) {
+  if (!cmdName.equals("!DI_GET_ALL")) {
     return false;
   }
   Serial.print(F("REPLY_OF:"));
@@ -808,17 +808,17 @@ TA_SerialCommandHandler serialCommandHandler;
 //DO 0, 2, 4...32: timer is running
 //DO 1, 3, 5...31: alarm until [stop triggered] or [sth not in the bath anymore]
 //TODO
-class TA_DIAutomation_SurfaceTreatmentBath16 {
+class TA_DIHandler_SurfaceTreatmentBath16 {
 public:
-  TA_DIAutomation_SurfaceTreatmentBath16();
+  TA_DIHandler_SurfaceTreatmentBath16();
   void loop(unsigned long currentTime);
 private:
 };
-TA_DIAutomation_SurfaceTreatmentBath16::TA_DIAutomation_SurfaceTreatmentBath16() {
+TA_DIHandler_SurfaceTreatmentBath16::TA_DIHandler_SurfaceTreatmentBath16() {
 }
-void TA_DIAutomation_SurfaceTreatmentBath16::loop(unsigned long currentTime) {
+void TA_DIHandler_SurfaceTreatmentBath16::loop(unsigned long currentTime) {
 }
-TA_DIAutomation_SurfaceTreatmentBath16 surfaceThreatmentBath;
+TA_DIHandler_SurfaceTreatmentBath16 diHandler;
 
 //------------------------------------ PROGRAM -----------------------------------------------------------------------
 
@@ -829,7 +829,7 @@ TA_DIAutomation_SurfaceTreatmentBath16 surfaceThreatmentBath;
 //TA_SerialCommandFetcher serialCommandFetcher;
 //TA_Chip_KinCony_KC868_A32_R1_2 chip;
 //TA_SerialCommandHandler serialCommandHandler;
-//TA_DIAutomation_SurfaceTreatmentBath16 surfaceThreatmentBath;
+//TA_DIHandler_SurfaceTreatmentBath16 surfaceThreatmentBath;
 
 //ARDUINO_MAIN
 void setup() {
@@ -846,8 +846,9 @@ void loop() {
     serialCommandHandler.forEach(
       serialCommandFetcher.next(), timeHandler.current());
   }
-  surfaceThreatmentBath.loop(timeHandler.current());
+  diHandler.loop(timeHandler.current());
 }
+
 
 
 

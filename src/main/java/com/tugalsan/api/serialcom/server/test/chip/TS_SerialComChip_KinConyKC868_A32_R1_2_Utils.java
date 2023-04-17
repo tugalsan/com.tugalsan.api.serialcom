@@ -1,8 +1,8 @@
-package com.tugalsan.api.serialcom.server.test;
+package com.tugalsan.api.serialcom.server.test.chip;
 
 import java.util.Optional;
 
-public class TS_SerialComTestKinConyKC868_A32_R1_2 {
+public class TS_SerialComChip_KinConyKC868_A32_R1_2_Utils {
 
     public static String chipName() {
         return "!CHIP_NAME";
