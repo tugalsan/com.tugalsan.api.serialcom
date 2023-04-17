@@ -47,7 +47,7 @@ public class TS_SerialComMessageBroker {
         };
         var run = TS_ThreadRunAllUntilFirstFail.of(maxDuration, callableReply);
         replies.removeAll(val -> val.contains(command));
-        if (run.resultsNotNull.isEmpty()) {
+        if (run.resultsForSuccessfulOnes.isEmpty()) {
             run.exceptions.forEach(e -> {
                 if (e instanceof TS_ThreadRunAllTimeoutException) {
                     d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
@@ -57,7 +57,7 @@ public class TS_SerialComMessageBroker {
             });
             return null;
         }
-        return run.resultsNotNull.get(0);
+        return run.resultsForSuccessfulOnes.get(0);
     }
 
 }
