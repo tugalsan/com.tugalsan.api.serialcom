@@ -67,17 +67,17 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder {
         return Optional.of("!DO_SET_IDX_TRUE_UNTIL %d %d %d %d".formatted(pinNumber_fr1_to32, secDuration, secGap, count));
     }
 
-//USAGE: TIMER-------------------------------------------
-//USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_GET_ALL
-//USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_SET_IDX 5
+    //USAGE: TIMER-------------------------------------------
+    //USAGE: getTimerAll as (cmd) ex: !TIMER_GET_ALL
+    //USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_SET_IDX 5 2
     public static String getTimer_All() {
-        return "TIMER_GET_ALL";
+        return "!TIMER_GET_ALL";
     }
 
-    public static Optional<String> setTimer_fr1_to32(int pinNumber_fr1_to32) {
+    public static Optional<String> setTimer_fr1_to32(int pinNumber_fr1_to32, int secDuration) {
         if (!isValidPinNumber(pinNumber_fr1_to32)) {
             return Optional.empty();
         }
-        return Optional.of("!TIMER_SET_IDX %d".formatted(pinNumber_fr1_to32));
+        return Optional.of("!TIMER_SET_IDX %d %d".formatted(pinNumber_fr1_to32, secDuration));
     }
 }

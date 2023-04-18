@@ -54,7 +54,10 @@ public class TS_SerialComTestJavaCode {
         d.cr("test", "digitalOut.oscillate", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.pin(12).oscillate(2, 1, 5)));
 
         //USAGE: TIMER-------------------------------------------
-        //USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_GET_ALL
-        //USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_SET_IDX 5
+        d.cr("test", "timer.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.refreshAll()));
+        d.cr("test", "timer.set", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.set(2, 15)));
+        d.cr("test", "timer.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.refreshAll()));
+        d.cr("test", "timer.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.refreshAll()));
+
     }
 }
