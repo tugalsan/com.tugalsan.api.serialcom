@@ -3,7 +3,6 @@ package com.tugalsan.api.serialcom.server.test.chip;
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialIn {
@@ -23,20 +22,27 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialIn {
         return new TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialIn(chip);
     }
 
-    public TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin pin(int pinNumber) {
-        return pins.get(pinNumber);
+    public TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin pin(int pinNumber_fr1_to32) {
+        d.ci("pin", "pinNumber_fr1_to32", pinNumber_fr1_to32);
+        return pins.get(pinNumber_fr1_to32 - 1);
     }
 
-    public Optional<String> refreshAll() {
+    public boolean refreshAll() {
         var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.getDigitalIn_All();
-        var reply = chip.mb.sendTheCommand_and_fetchMeReplyInMaxSecondsOf(cmd, chip.timeout);
-        if (reply.isEmpty()){
-            return reply;
+        var reply = chip.mb.sendTheCommand_and_fetchMeReplyInMaxSecondsOf(cmd, chip.timeout, chip.validReplyPrefix, true);
+        if (reply.isEmpty()) {
+            return false;
         }
-        if (reply.isPresent()){
-            var allValues = reply.get().substring(cmd.length()+2);
-            d.cr("refreshAll", "result", allValues);
+//        var allValues = reply.get().substring("REPLY_OF:".length() + cmd.length() + "->".length());
+        var allValues = reply.get();
+        if (allValues.length() != 32) {
+            d.ce("refreshAll", "ERROR_SIZE_NOT_32", reply, allValues);
+            return false;
         }
-        return reply;
+        IntStream.rangeClosed(1, 32).parallel().forEach(pinNumber_fr1_to32 -> {
+            pin(pinNumber_fr1_to32).setValueImitate(allValues.charAt(pinNumber_fr1_to32 - 1) == '1');
+        });
+        d.ci("refreshAll", "result", allValues);
+        return true;
     }
 }

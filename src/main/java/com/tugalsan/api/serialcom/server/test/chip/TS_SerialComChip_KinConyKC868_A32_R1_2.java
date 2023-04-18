@@ -15,34 +15,41 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2 {
         return Duration.ofSeconds(10);
     }
 
+    public static int defaultBrokerSize() {
+        return 10;
+    }
+
     private TS_SerialComChip_KinConyKC868_A32_R1_2(TS_SerialComMessageBroker mb, Duration timeout) {
         this.mb = mb;
         this.timeout = timeout;
         this.digitalIn = TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialIn.of(this);
+        this.digitalOut = TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut.of(this);
     }
     final public TS_SerialComMessageBroker mb;
     final public Duration timeout;
     final public TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialIn digitalIn;
+    final public TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut digitalOut;
+    final public String validReplyPrefix = "REPLY_OF:";
+    final public String validReplySuffixSet = "DONE";
 
     public static TS_SerialComChip_KinConyKC868_A32_R1_2 of(TS_SerialComMessageBroker mb, Duration timeout) {
         return new TS_SerialComChip_KinConyKC868_A32_R1_2(mb, timeout);
     }
 
-    public static Optional<String> call(TGS_CallableType1<Optional<String>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
+    public static <T> Optional<T> call(TGS_CallableType1<Optional<T>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
         return call(chip, defaultTimeoutDuration());
     }
 
-    public static Optional<String> call(TGS_CallableType1<Optional<String>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip, Duration timeout) {
-        var brokerSize = 10;
+    public static <T> Optional<T> call(TGS_CallableType1<Optional<T>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip, Duration timeout) {
         var result = new Object() {
-            Optional<String> value;
+            Optional<T> value;
         };
         TS_SerialComBuilder.portFirst()
                 .baudRate_115200().dataBits_8().oneStopBit().parityNone()
                 .onPortError(() -> d.ce("onPortError", "what2do?"))
                 .onSetupError(() -> d.ce("onSetupError", "what2do?"))
                 .onConnectError(() -> d.ce("onConnectError", "what2do?"))
-                .onReply_useDefaultMessageBroker_withMaxMessageCount(brokerSize)
+                .onReply_useDefaultMessageBroker_withMaxMessageCount(defaultBrokerSize())
                 .onSuccess_useAndClose_defaultMessageBroker((con, mb) -> {
                     var chipDriver = TS_SerialComChip_KinConyKC868_A32_R1_2.of(mb, timeout);
                     result.value = chip.call(chipDriver);
@@ -53,7 +60,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2 {
     public Optional<String> chipName() {
         if (chipName.isEmpty()) {
             var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.chipName();
-            var reply = mb.sendTheCommand_and_fetchMeReplyInMaxSecondsOf(cmd, timeout);
+            var reply = mb.sendTheCommand_and_fetchMeReplyInMaxSecondsOf(cmd, timeout, validReplyPrefix, true);
             chipName = reply;
         }
         return chipName;

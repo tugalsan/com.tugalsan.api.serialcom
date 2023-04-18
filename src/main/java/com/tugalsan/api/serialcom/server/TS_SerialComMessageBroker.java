@@ -5,9 +5,9 @@ import com.tugalsan.api.thread.server.TS_ThreadCall;
 import com.tugalsan.api.thread.server.TS_ThreadSafeLst;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.thread.server.core.TS_ThreadCallParallelTimeoutException;
+import com.tugalsan.api.validator.client.TGS_ValidatorType1;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
 public class TS_SerialComMessageBroker {
 
@@ -32,33 +32,49 @@ public class TS_SerialComMessageBroker {
         replies.add(reply);
         replies.cropToLengthFast(maxSize);
         if (d.infoEnable) {
-            if (reply.startsWith("USAGE") || reply.startsWith("INFO")) {
-                d.ci("onReply", reply);
+            if (reply.startsWith("REPLY_OF:")) {
+                d.cr("onReply", reply);
                 return;
             }
             if (reply.startsWith("ERROR")) {
                 d.ce("onReply", reply);
                 return;
             }
-            d.cr("onReply", reply);
+            d.ci("onReply", reply);
         }
     }
 
-    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, Duration maxDuration) {
+    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, Duration maxDuration, String filterPrefix, boolean filterContainCommand) {
         if (!con.send(command)) {
             d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_SENDING");
             return Optional.empty();
         }
-        Callable<String> callableReply = () -> {
+        TGS_ValidatorType1<String> condition = val -> {
+            if (filterContainCommand && !val.contains(command)) {
+                return false;
+            }
+            if (filterPrefix != null && !val.startsWith(filterPrefix)) {
+                return false;
+            }
+            return true;
+        };
+        var run = TS_ThreadCall.single(maxDuration, () -> {
             String reply = null;
             while (reply == null) {
-                reply = replies.findFirst(val -> val.contains(command));
-                TS_ThreadWait.of(Duration.ofSeconds(1));
+                reply = replies.findFirst(val -> condition.validate(val));
+                TS_ThreadWait.of(Duration.ofMillis(100));
+                Thread.yield();
+            }
+            if (filterContainCommand && filterPrefix != null) {
+                reply = reply.substring(filterPrefix.length() + command.length() + "->".length());
+            } else if (filterContainCommand) {
+                reply = reply.substring(command.length() + "->".length());
+            } else if (filterPrefix != null) {
+                reply = reply.substring(filterPrefix.length() + "->".length());
             }
             return reply;
-        };
-        var run = TS_ThreadCall.single(maxDuration, callableReply);
-        replies.removeAll(val -> val.contains(command));
+        });
+        replies.removeAll(val -> condition.validate(val));
         if (run.resultsForSuccessfulOnes.isEmpty() || run.resultsForSuccessfulOnes.get(0) == null) {
             run.exceptions.forEach(e -> {
                 if (e instanceof TS_ThreadCallParallelTimeoutException) {
