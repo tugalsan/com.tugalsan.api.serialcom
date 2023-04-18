@@ -54,6 +54,12 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut {
         }
         var result = reply.get();
         d.ci("setAll", "result", result);
-        return result.endsWith(chip.validReplySuffixSet);
+        var processed = result.endsWith(chip.validReplySuffixSet);
+        if (processed) {
+            IntStream.rangeClosed(1, 32).parallel().forEach(pinNumber_fr1_to32 -> {
+                pin(pinNumber_fr1_to32).setValueImitate(value);
+            });
+        }
+        return processed;
     }
 }

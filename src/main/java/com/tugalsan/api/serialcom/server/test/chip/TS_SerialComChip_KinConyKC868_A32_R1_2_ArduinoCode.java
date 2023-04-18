@@ -465,7 +465,6 @@ bool TA_SerialCommandHandler::_IfCommand_TimerSetIdx(String command, String cmdN
   return true;
 }
 bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrueUntil(String command, String cmdName, int pinNumber, int duration, int gap, int count, unsigned long currentTime) {
-  Serial.println("testing...");
   if (!cmdName.equals("!DO_SET_IDX_TRUE_UNTIL")) {
     return false;
   }
@@ -521,7 +520,7 @@ bool TA_SerialCommandHandler::_IfCommand_TimerGetAll(String command, String cmdN
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.print(F("->"));
-  for (int i = 1; i <= 32; i++) {
+  for (int i = 0; i < 32; i++) {
     Serial.print(timerDuration[i]);
     Serial.print(F(" "));
   }
@@ -741,8 +740,8 @@ void TA_SerialCommandHandler::usage() {
   Serial.println(F("USAGE: DIGITAL OUT OSCILLATE---------------------------"));
   Serial.println(F("USAGE: setDigitalOutOscillating as (cmd, pin1-32, secDuration, secGap, count) ex: !DO_SET_IDX_TRUE_UNTIL 12 2 1 5"));
   Serial.println(F("USAGE: TIMER-------------------------------------------"));
-  Serial.println(F("USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_GET_ALL"));
-  Serial.println(F("USAGE: setTimer as (cmd, pin2-32step2, secDuration) ex: !TIMER_SET_IDX 5"));
+  Serial.println(F("USAGE: getTimerAll as (cmd) ex: !TIMER_GET_ALL"));
+  Serial.println(F("USAGE: setTimerIdx as (cmd, pin2-32step2, secDuration) ex: !TIMER_SET_IDX 5 2"));
 }
 void TA_SerialCommandHandler::forEach(String command, unsigned long currentTime) {
   if (_IfCommandNotValid(command)) return;
@@ -848,8 +847,6 @@ void loop() {
   }
   diHandler.loop(timeHandler.current());
 }
-
-
 
 
      */

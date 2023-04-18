@@ -61,6 +61,10 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_Timer {
         }
         var result = reply.get();
         d.ci("set", "result", result);
-        return result.endsWith(chip.validReplySuffixSet);
+        var processed = result.endsWith(chip.validReplySuffixSet);
+        if (processed) {
+            buffer[pinNumber_fr1_to32 - 1] = secDuration;
+        }
+        return processed;
     }
 }

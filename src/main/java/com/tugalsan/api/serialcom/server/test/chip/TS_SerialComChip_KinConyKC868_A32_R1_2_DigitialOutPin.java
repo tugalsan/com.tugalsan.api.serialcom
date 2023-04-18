@@ -49,7 +49,11 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin {
         }
         var result = reply.get();
         d.ci("setValue", "value", value, "result", result);
-        return result.endsWith(chip.validReplySuffixSet);
+        var processed = result.endsWith(chip.validReplySuffixSet);
+        if (processed) {
+            this.value = value;
+        }
+        return processed;
     }
 
     public boolean oscillate(int secDuration, int secGap, int count) {
@@ -64,7 +68,11 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin {
         }
         var result = reply.get();
         d.ci("setValue", "value", value, "result", result);
-        return result.endsWith(chip.validReplySuffixSet);
+        var processed = result.endsWith(chip.validReplySuffixSet);
+        if (processed) {
+            this.value = false;
+        }
+        return processed;
     }
 
     public void setValueImitate(boolean value) {
