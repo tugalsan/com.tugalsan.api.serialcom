@@ -454,7 +454,6 @@ TA_SerialCommandHandler::TA_SerialCommandHandler() {
   for (int i = 0; i < 32; i++) timerDuration[i] = 5;
 }
 bool TA_SerialCommandHandler::_IfCommand_TimerSetIdx(String command, String cmdName, int pinNumber, int duration) {
-  Serial.println("testing...");
   if (!cmdName.equals("!TIMER_SET_IDX")) {
     return false;
   }
