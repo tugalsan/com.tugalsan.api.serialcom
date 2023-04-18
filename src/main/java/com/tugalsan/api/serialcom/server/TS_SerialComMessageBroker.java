@@ -6,11 +6,12 @@ import com.tugalsan.api.thread.server.TS_ThreadSafeLst;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.thread.server.core.TS_ThreadCallParallelTimeoutException;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public class TS_SerialComMessageBroker {
 
-    final private static TS_Log d = TS_Log.of(true, TS_SerialComMessageBroker.class);
+    final public static TS_Log d = TS_Log.of(true, TS_SerialComMessageBroker.class);
 
     public TS_SerialComMessageBroker(int maxSize) {
         this.maxSize = maxSize;
@@ -30,12 +31,23 @@ public class TS_SerialComMessageBroker {
     public void onReply(String reply) {
         replies.add(reply);
         replies.cropToLengthFast(maxSize);
+        if (d.infoEnable) {
+            if (reply.startsWith("USAGE") || reply.startsWith("INFO")) {
+                d.ci("onReply", reply);
+                return;
+            }
+            if (reply.startsWith("ERROR")) {
+                d.ce("onReply", reply);
+                return;
+            }
+            d.cr("onReply", reply);
+        }
     }
 
-    public String sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, Duration maxDuration) {
+    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, Duration maxDuration) {
         if (!con.send(command)) {
             d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_SENDING");
-            return null;
+            return Optional.empty();
         }
         Callable<String> callableReply = () -> {
             String reply = null;
@@ -47,7 +59,7 @@ public class TS_SerialComMessageBroker {
         };
         var run = TS_ThreadCall.single(maxDuration, callableReply);
         replies.removeAll(val -> val.contains(command));
-        if (run.resultsForSuccessfulOnes.isEmpty()) {
+        if (run.resultsForSuccessfulOnes.isEmpty() || run.resultsForSuccessfulOnes.get(0) == null) {
             run.exceptions.forEach(e -> {
                 if (e instanceof TS_ThreadCallParallelTimeoutException) {
                     d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
@@ -55,9 +67,8 @@ public class TS_SerialComMessageBroker {
                 }
                 d.ct("sendTheCommand_and_fetchMeReplyInMaxSecondsOf->" + command, e);
             });
-            return null;
+            return Optional.empty();
         }
-        return run.resultsForSuccessfulOnes.get(0);
+        return Optional.of(run.resultsForSuccessfulOnes.get(0));
     }
-
 }

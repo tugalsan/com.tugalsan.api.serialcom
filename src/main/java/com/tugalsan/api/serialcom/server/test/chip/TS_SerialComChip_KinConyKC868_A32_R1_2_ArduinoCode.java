@@ -1,6 +1,6 @@
 package com.tugalsan.api.serialcom.server.test.chip;
 
-public class TS_SerialComChip_KinConyKC868_A32_R1_2ArduinoCode {
+public class TS_SerialComChip_KinConyKC868_A32_R1_2_ArduinoCode {
     /* TODO
         - WRITE A TUTORIAL HOW TO SETUP ANDROID    
         - WRITE CLASS TA_DIHandler_SurfaceTreatmentBath16
