@@ -1,6 +1,7 @@
 package com.tugalsan.api.serialcom.server.test.chip;
 
 import com.tugalsan.api.log.server.TS_Log;
+import java.util.Optional;
 
 public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin {
 
@@ -17,18 +18,18 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin {
         return new TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin(chip, pinNumber);
     }
 
-    public boolean getValueFromChip() {
+    public Optional<Boolean> getValueFromChip() {
         var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.getDigitalOut_fr1_to32(pinNumber);
         if (cmd.isEmpty()) {
             d.ce("getValueFromChip", "cmd.isEmpty()", "pinNumber", pinNumber);
-            return false;
+            return Optional.empty();
         }
         var reply = chip.mb.sendTheCommand_and_fetchMeReplyInMaxSecondsOf(cmd.get(), chip.timeout, chip.validReplyPrefix, true);
         if (reply.isEmpty()) {
-            return false;
+            return Optional.empty();
         }
         value = reply.get().equals("1");
-        return value;
+        return Optional.of(value);
     }
 
     public boolean getValueFromBuffer() {

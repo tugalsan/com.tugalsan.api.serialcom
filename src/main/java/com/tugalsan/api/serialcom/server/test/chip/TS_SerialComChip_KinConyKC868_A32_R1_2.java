@@ -36,11 +36,16 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2 {
         return new TS_SerialComChip_KinConyKC868_A32_R1_2(mb, timeout);
     }
 
-    public static <T> Optional<T> call(TGS_CallableType1<Optional<T>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
-        return call(chip, defaultTimeoutDuration());
+    public static boolean callBoolResult(TGS_CallableType1<Boolean, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
+        TGS_CallableType1<Optional<Boolean>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip2 = c -> Optional.of(chip.call(c));
+        return callOptional(chip2, defaultTimeoutDuration()).get();
     }
 
-    public static <T> Optional<T> call(TGS_CallableType1<Optional<T>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip, Duration timeout) {
+    public static <T> Optional<T> callOptional(TGS_CallableType1<Optional<T>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
+        return callOptional(chip, defaultTimeoutDuration());
+    }
+
+    public static <T> Optional<T> callOptional(TGS_CallableType1<Optional<T>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip, Duration timeout) {
         var result = new Object() {
             Optional<T> value;
         };
