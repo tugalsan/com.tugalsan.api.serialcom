@@ -1,7 +1,11 @@
 package com.tugalsan.api.serialcom.server.test.chip;
 
 public class TS_SerialComChip_KinConyKC868_A32_R1_2_ArduinoCode {
-    /* //------------------------------------ TODO -----------------------------------------------------------------------
+    /*
+    
+    
+    
+    //------------------------------------ TODO -----------------------------------------------------------------------
 //A BIG MEM FOR SNIFFING WHAT IS GOING ON
 
 //------------------------------------ WARNING -----------------------------------------------------------------------
@@ -21,7 +25,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_ArduinoCode {
 
 #define INFO_TA_SerialCommandHandler false
 #define INFO_TA_Chip_KinCony_KC868_A32_R1_2 false
-#define INFO_TA_SurfaceTreatmentBath16 true
+#define INFO_TA_SurfaceTreatmentBath16 false
 
 //------------------------------------ STRING HANDLER -----------------------------------------------------------------------
 
@@ -1064,6 +1068,7 @@ void loop() {
   chip.loop(curTime);
   surfaceTreatmentBath16.loop(curTime);
 }
+
 
 
      */

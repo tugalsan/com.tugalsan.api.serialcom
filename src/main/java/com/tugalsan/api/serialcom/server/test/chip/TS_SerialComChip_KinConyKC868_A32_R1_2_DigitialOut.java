@@ -24,7 +24,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut {
 
     public TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin pin(int pin) {
         d.ci("pin", "i", pin);
-        return pins.get(pin - 1);
+        return pins.get(pin);
     }
 
     public boolean refreshAll() {
