@@ -3,10 +3,13 @@ package com.tugalsan.api.serialcom.server.test.chip;
 public class TS_SerialComChip_KinConyKC868_A32_R1_2_ArduinoCode {
     /*
     
-    
-    
     //------------------------------------ TODO -----------------------------------------------------------------------
 //A BIG MEM FOR SNIFFING WHAT IS GOING ON
+//TA_SerialCommandHandler_MEM_INT_COUNT 64:
+// 00 - 15 -> timer set
+// 16 - 31 -> sensör (1/0)
+// 32 - 47 -> button (1/0)
+// 48 - 63 -> bathIn/alarm (1/1)
 
 //------------------------------------ WARNING -----------------------------------------------------------------------
 //FOR BOARD KinCony_KC868_A32_R1_2 PIN 1 is called pin 0 here for ease of array usage
@@ -20,7 +23,6 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_ArduinoCode {
 #define TA_Chip_KinCony_KC868_A32_R1_2_BUTTON_LIFE_MS 200  //critical for digital button
 
 #define TA_SerialCommandHandler_MEM_INT_COUNT 16
-//TA_SerialCommandHandler_MEM_INT_COUNT 0 -16
 #define TA_SerialCommandHandler_MEM_INT_DEFAULT_VALUE 0
 
 #define INFO_TA_SerialCommandHandler false
@@ -325,7 +327,7 @@ bool TA_Chip_KinCony_KC868_A32_R1_2::__fetchDI(int pin) {
     if (pin == 16) return _pcf8574_I3.digitalRead(P0) == LOW;
     if (pin == 17) return _pcf8574_I3.digitalRead(P1) == LOW;
     if (pin == 18) return _pcf8574_I3.digitalRead(P2) == LOW;
-    if (pin == 29) return _pcf8574_I3.digitalRead(P3) == LOW;
+    if (pin == 19) return _pcf8574_I3.digitalRead(P3) == LOW;
     if (pin == 20) return _pcf8574_I3.digitalRead(P4) == LOW;
     if (pin == 21) return _pcf8574_I3.digitalRead(P5) == LOW;
     if (pin == 22) return _pcf8574_I3.digitalRead(P6) == LOW;
@@ -948,9 +950,9 @@ void TA_SurfaceTreatmentBath16::loop(unsigned long currentTime) {
   if (currentTime < 5000) {
     return;
   }
-  for (int bath = 0; bath < 16 && bath == 0; bath += 2) {
-    int pin = bath * 2 + 1;    //ON PROCESS SENSOR AND LIGHT
-    int pin2 = pin + 1;  //START STOP BUTTON AND ALARM
+  for (int bath = 0; bath < 16; bath += 2) {
+    int pin = bath * 2 + 1;  //ON PROCESS SENSOR AND LIGHT
+    int pin2 = pin + 1;      //START STOP BUTTON AND ALARM
 
     //PARAMS
     bool sensorActivePrev = chip.getButtonPrevious(pin);
@@ -1067,6 +1069,14 @@ void loop() {
   serialCommandHandler.loop(curTime);
   chip.loop(curTime);
   surfaceTreatmentBath16.loop(curTime);
+  //_pcf8574_R1.digitalWrite(P0, HIGH);
+  //delay(1000);
+  //_pcf8574_R1.digitalWrite(P0, LOW);
+  //delay(1000);
+  //_pcf8574_R1.digitalWrite(P1, HIGH);
+  //delay(1000);
+  //_pcf8574_R1.digitalWrite(P1, LOW);
+  //delay(1000);
 }
 
 
