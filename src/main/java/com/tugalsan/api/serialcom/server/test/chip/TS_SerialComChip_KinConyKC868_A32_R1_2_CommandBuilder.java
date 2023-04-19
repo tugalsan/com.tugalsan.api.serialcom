@@ -4,8 +4,8 @@ import java.util.Optional;
 
 public class TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder {
 
-    public static boolean isValidPinNumber(int pinNumber_fr1_to32) {
-        return pinNumber_fr1_to32 >= 1 && pinNumber_fr1_to32 <= 32;
+    public static boolean isPinValid(int pin) {
+        return pin >= 0 && pin < 32;
     }
 
 //USAGE: GENERAL------------------------------------------
@@ -21,11 +21,11 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder {
         return "!DI_GET_ALL";
     }
 
-    public static Optional<String> getDigitalIn_fr1_to32(int pinNumber_fr1_to32) {
-        if (!isValidPinNumber(pinNumber_fr1_to32)) {
+    public static Optional<String> getDigitalIn(int pin) {
+        if (!isPinValid(pin)) {
             return Optional.empty();
         }
-        return Optional.of("!DI_GET_IDX %d".formatted(pinNumber_fr1_to32));
+        return Optional.of("!DI_GET_IDX %d".formatted(pin));
     }
 
 //USAGE: DIGITAL OUT GET----------------------------------
@@ -35,11 +35,11 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder {
         return "!DO_GET_ALL";
     }
 
-    public static Optional<String> getDigitalOut_fr1_to32(int pinNumber_fr1_to32) {
-        if (!isValidPinNumber(pinNumber_fr1_to32)) {
+    public static Optional<String> getDigitalOut(int pin) {
+        if (!isPinValid(pin)) {
             return Optional.empty();
         }
-        return Optional.of("!DO_GET_IDX %d".formatted(pinNumber_fr1_to32));
+        return Optional.of("!DO_GET_IDX %d".formatted(pin));
     }
 //USAGE: DIGITAL OUT SET----------------------------------
 //USAGE: setDigitalOutAllAsTrue as (cmd) ex: !DO_SET_ALL_TRUE
@@ -51,20 +51,20 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder {
         return value ? "!DO_SET_ALL_TRUE" : "!DO_SET_ALL_FALSE";
     }
 
-    public static Optional<String> setDigitalOut_fr1_to32(int pinNumber_fr1_to32, boolean value) {
-        if (!isValidPinNumber(pinNumber_fr1_to32)) {
+    public static Optional<String> setDigitalOut(int pin, boolean value) {
+        if (!isPinValid(pin)) {
             return Optional.empty();
         }
-        return Optional.of((value ? "!DO_SET_IDX_TRUE %d" : "!DO_SET_IDX_FALSE %d").formatted(pinNumber_fr1_to32));
+        return Optional.of((value ? "!DO_SET_IDX_TRUE %d" : "!DO_SET_IDX_FALSE %d").formatted(pin));
     }
 
 //USAGE: DIGITAL OUT OSCILLATE---------------------------
 //USAGE: setDigitalOutOscillating as (cmd, pin1-32, secDuration, secGap, count) ex: !DO_SET_IDX_TRUE_UNTIL 12 2 1 5
-    public static Optional<String> setDigitalOut_Oscillating_fr1_to32(int pinNumber_fr1_to32, int secDuration, int secGap, int count) {
-        if (!isValidPinNumber(pinNumber_fr1_to32)) {
+    public static Optional<String> setDigitalOut_Oscillating(int pin, int secDuration, int secGap, int count) {
+        if (!isPinValid(pin)) {
             return Optional.empty();
         }
-        return Optional.of("!DO_SET_IDX_TRUE_UNTIL %d %d %d %d".formatted(pinNumber_fr1_to32, secDuration, secGap, count));
+        return Optional.of("!DO_SET_IDX_TRUE_UNTIL %d %d %d %d".formatted(pin, secDuration, secGap, count));
     }
 
     //USAGE: MEMORY-------------------------------------------
@@ -75,7 +75,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder {
     }
 
     public static Optional<String> setMemInt_Idx(int idx, int secDuration) {
-        if (!isValidPinNumber(idx)) {
+        if (!isPinValid(idx)) {
             return Optional.empty();
         }
         return Optional.of("!MEMINT_SET_IDX %d %d".formatted(idx, secDuration));

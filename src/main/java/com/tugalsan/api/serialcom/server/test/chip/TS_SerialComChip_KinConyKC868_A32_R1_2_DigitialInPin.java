@@ -7,21 +7,21 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin.class);
 
-    private TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin(TS_SerialComChip_KinConyKC868_A32_R1_2 chip, int pinNumber) {
+    private TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin(TS_SerialComChip_KinConyKC868_A32_R1_2 chip, int pin) {
         this.chip = chip;
-        this.pinNumber = pinNumber;
+        this.pin = pin;
     }
     final private TS_SerialComChip_KinConyKC868_A32_R1_2 chip;
-    final private int pinNumber;
+    final private int pin;
 
-    public static TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin of(TS_SerialComChip_KinConyKC868_A32_R1_2 chip, int pinNumber) {
-        return new TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin(chip, pinNumber);
+    public static TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin of(TS_SerialComChip_KinConyKC868_A32_R1_2 chip, int pin) {
+        return new TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialInPin(chip, pin);
     }
 
     public Optional<Boolean> getValueFromChip() {
-        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.getDigitalIn_fr1_to32(pinNumber);
+        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.getDigitalIn(pin);
         if (cmd.isEmpty()) {
-            d.ce("getValueFromChip", "cmd.isEmpty()", "pinNumber", pinNumber);
+            d.ce("getValueFromChip", "cmd.isEmpty()", "pin", pin);
             return Optional.empty();
         }
         var reply = chip.mb.sendTheCommand_and_fetchMeReplyInMaxSecondsOf(cmd.get(), chip.timeout, chip.validReplyPrefix, true);

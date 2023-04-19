@@ -35,9 +35,9 @@ public class TS_SerialComTestJavaCode {
             d.cr("test", "digitalIn.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalIn.refreshAll()));
         }
         if (test_digitalIn_getIdx) {
-            IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
-                d.cr("test", "chip.digitalIn.pin(" + pinNumber_fr1_to32 + ").getValueFromChip", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> {
-                    return chip.digitalIn.pin(pinNumber_fr1_to32).getValueFromChip();
+            IntStream.range(0, 32).forEachOrdered(i -> {
+                d.cr("test", "chip.digitalIn.pin(" + i + ").getValueFromChip", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> {
+                    return chip.digitalIn.pin(i).getValueFromChip();
                 }));
             });
         }
@@ -47,9 +47,9 @@ public class TS_SerialComTestJavaCode {
             d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.refreshAll()));
         }
         if (test_digitalOut_getIdx) {
-            IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
-                d.cr("test", "chip.digitalOut.pin(" + pinNumber_fr1_to32 + ").getValueFromChip", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> {
-                    return chip.digitalOut.pin(pinNumber_fr1_to32).getValueFromChip();
+            IntStream.range(0, 32).forEachOrdered(i -> {
+                d.cr("test", "chip.digitalOut.pin(" + i + ").getValueFromChip", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> {
+                    return chip.digitalOut.pin(i).getValueFromChip();
                 }));
             });
         }
@@ -59,14 +59,14 @@ public class TS_SerialComTestJavaCode {
             d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.setAll(false)));
         }
         if (test_digitalOut_setIdx) {
-            IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
-                d.cr("test", "chip.digitalOut.pin(" + pinNumber_fr1_to32 + ").setValue(true)", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> {
-                    return chip.digitalOut.pin(pinNumber_fr1_to32).setValue(true);
+            IntStream.range(0, 32).forEachOrdered(i -> {
+                d.cr("test", "chip.digitalOut.pin(" + i + ").setValue(true)", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> {
+                    return chip.digitalOut.pin(i).setValue(true);
                 }));
             });
-            IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
-                d.cr("test", "chip.digitalOut.pin(" + pinNumber_fr1_to32 + ").setValue(false)", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> {
-                    return chip.digitalOut.pin(pinNumber_fr1_to32).setValue(false);
+            IntStream.range(0, 32).forEachOrdered(i -> {
+                d.cr("test", "chip.digitalOut.pin(" + i + ").setValue(false)", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> {
+                    return chip.digitalOut.pin(i).setValue(false);
                 }));
             });
         }

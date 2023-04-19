@@ -11,7 +11,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut {
 
     private TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut(TS_SerialComChip_KinConyKC868_A32_R1_2 chip) {
         this.chip = chip;
-        IntStream.rangeClosed(1, 32).forEachOrdered(i -> {
+        IntStream.range(0, 32).forEachOrdered(i -> {
             pins.add(TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin.of(chip, i));
         });
     }
@@ -22,9 +22,9 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut {
         return new TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut(chip);
     }
 
-    public TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin pin(int pinNumber_fr1_to32) {
-        d.ci("pin", "pinNumber_fr1_to32", pinNumber_fr1_to32);
-        return pins.get(pinNumber_fr1_to32 - 1);
+    public TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOutPin pin(int pin) {
+        d.ci("pin", "i", pin);
+        return pins.get(pin - 1);
     }
 
     public boolean refreshAll() {
@@ -39,8 +39,8 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut {
             d.ce("refreshAll", "ERROR_SIZE_NOT_32", reply, allValues);
             return false;
         }
-        IntStream.rangeClosed(1, 32).parallel().forEach(pinNumber_fr1_to32 -> {
-            pin(pinNumber_fr1_to32).setValueImitate(allValues.charAt(pinNumber_fr1_to32 - 1) == '1');
+        IntStream.range(0, 32).parallel().forEach(i -> {
+            pin(i).setValueImitate(allValues.charAt(i - 1) == '1');
         });
         d.ci("refreshAll", "result", allValues);
         return true;
@@ -56,8 +56,8 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialOut {
         d.ci("setAll", "result", result);
         var processed = result.endsWith(chip.validReplySuffixSet);
         if (processed) {
-            IntStream.rangeClosed(1, 32).parallel().forEach(pinNumber_fr1_to32 -> {
-                pin(pinNumber_fr1_to32).setValueImitate(value);
+            IntStream.range(0, 32).parallel().forEach(i -> {
+                pin(i).setValueImitate(value);
             });
         }
         return processed;
