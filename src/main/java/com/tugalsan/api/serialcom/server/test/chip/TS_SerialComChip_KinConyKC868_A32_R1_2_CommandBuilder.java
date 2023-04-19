@@ -69,15 +69,15 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder {
 
     //USAGE: MEMORY-------------------------------------------
     //USAGE: getMemIntAll as (cmd) ex: !MEMINT_GET_ALL
-    //USAGE: setMemInt as (cmd, pin2-32step2, secDuration) ex: !MEMINT_SET_IDX 5 2
+    //USAGE: setMemInt as (cmd, idx) ex: !MEMINT_SET_IDX 5 2
     public static String getMemInt_All() {
         return "!MEMINT_GET_ALL";
     }
 
-    public static Optional<String> setMemInt_fr1_to32(int pinNumber_fr1_to32, int secDuration) {
-        if (!isValidPinNumber(pinNumber_fr1_to32)) {
+    public static Optional<String> setMemInt_Idx(int idx, int secDuration) {
+        if (!isValidPinNumber(idx)) {
             return Optional.empty();
         }
-        return Optional.of("!MEMINT_SET_IDX %d %d".formatted(pinNumber_fr1_to32, secDuration));
+        return Optional.of("!MEMINT_SET_IDX %d %d".formatted(idx, secDuration));
     }
 }

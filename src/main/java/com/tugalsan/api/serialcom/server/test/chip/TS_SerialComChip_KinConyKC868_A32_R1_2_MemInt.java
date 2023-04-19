@@ -13,7 +13,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
         this.chip = chip;
     }
     final private TS_SerialComChip_KinConyKC868_A32_R1_2 chip;
-    final private int[] buffer = new int[32];
+    final private int[] buffer = new int[16];
 
     public static TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt of(TS_SerialComChip_KinConyKC868_A32_R1_2 chip) {
         return new TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt(chip);
@@ -27,8 +27,8 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
         }
         var resultString = reply.get();
         var results = TS_StringUtils.toList_spc(resultString);
-        if (results.size() != 32) {
-            d.ce("refreshAll", "ERROR_SIZE_NOT_32", resultString, results);
+        if (results.size() != buffer.length) {
+            d.ce("refreshAll", "ERROR_SIZE_NOT_VALID", resultString, results);
             return false;
         }
         for (var val : results) {
@@ -38,20 +38,20 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
             }
         }
         d.ci("refreshAll", results);
-        IntStream.range(0, 32).parallel().forEach(i -> {
+        IntStream.range(0, buffer.length).parallel().forEach(i -> {
             buffer[i] = TGS_CastUtils.toInteger(results.get(i));
         });
         d.ci("refreshAll", results);
         return true;
     }
 
-    public int get(int pinNumber_fr1_to32) {
-        d.ci("get", "pinNumber_fr1_to32", pinNumber_fr1_to32);
-        return buffer[pinNumber_fr1_to32 - 1];
+    public int get(int idx) {
+        d.ci("get", "idx", idx);
+        return buffer[idx - 1];
     }
 
-    public boolean set(int pinNumber_fr1_to32, int secDuration) {
-        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.setMemInt_fr1_to32(pinNumber_fr1_to32, secDuration);
+    public boolean set(int idx, int secDuration) {
+        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.setMemInt_Idx(idx, secDuration);
         if (cmd.isEmpty()) {
             return false;
         }
@@ -63,7 +63,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
         d.ci("set", "result", result);
         var processed = result.endsWith(chip.validReplySuffixSet);
         if (processed) {
-            buffer[pinNumber_fr1_to32 - 1] = secDuration;
+            buffer[idx - 1] = secDuration;
         }
         return processed;
     }
