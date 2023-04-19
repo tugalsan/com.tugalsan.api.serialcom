@@ -38,7 +38,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
             }
         }
         d.ci("refreshAll", results);
-        IntStream.range(0, buffer.length).parallel().forEach(i -> {
+        IntStream.range(0, buffer.length).forEach(i -> {
             buffer[i] = TGS_CastUtils.toInteger(results.get(i));
         });
         d.ci("refreshAll", results);
@@ -47,7 +47,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
 
     public int get(int idx) {
         d.ci("get", "idx", idx);
-        return buffer[idx - 1];
+        return buffer[idx];
     }
 
     public boolean set(int idx, int secDuration) {
@@ -63,7 +63,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
         d.ci("set", "result", result);
         var processed = result.endsWith(chip.validReplySuffixSet);
         if (processed) {
-            buffer[idx - 1] = secDuration;
+            buffer[idx] = secDuration;
         }
         return processed;
     }

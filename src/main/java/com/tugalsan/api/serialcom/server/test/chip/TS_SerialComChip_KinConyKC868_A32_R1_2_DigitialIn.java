@@ -39,8 +39,8 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_DigitialIn {
             d.ce("refreshAll", "ERROR_SIZE_NOT_32", reply, allValues);
             return false;
         }
-        IntStream.range(0, 32).parallel().forEach(i -> {
-            pin(i).setValueImitate(allValues.charAt(i - 1) == '1');
+        IntStream.range(0, 32).forEach(i -> {
+                pin(i).setValueImitate(allValues.charAt(i) == '1');
         });
         d.ci("refreshAll", "result", allValues);
         return true;
