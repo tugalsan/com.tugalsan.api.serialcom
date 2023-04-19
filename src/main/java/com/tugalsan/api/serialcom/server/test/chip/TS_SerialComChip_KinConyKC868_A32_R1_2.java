@@ -43,6 +43,10 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2 {
         return callOptional(chip2, defaultTimeoutDuration()).get();
     }
 
+    public static Optional<String> callStrOptional(TGS_CallableType1<Optional<String>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
+        return callOptional(chip, defaultTimeoutDuration());
+    }
+
     public static <T> Optional<T> callOptional(TGS_CallableType1<Optional<T>, TS_SerialComChip_KinConyKC868_A32_R1_2> chip) {
         return callOptional(chip, defaultTimeoutDuration());
     }
