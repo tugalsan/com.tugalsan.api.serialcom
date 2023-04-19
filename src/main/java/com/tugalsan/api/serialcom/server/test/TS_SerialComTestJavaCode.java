@@ -9,14 +9,32 @@ public class TS_SerialComTestJavaCode {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComTestJavaCode.class);
 
-    public static void test() {
-        TS_SerialComMessageBroker.d.infoEnable = true;
+    public static void test(
+            boolean debugEnable,
+            boolean test_chipname,
+            boolean test_digitalIn_getAll,
+            boolean test_digitalIn_getIdx,
+            boolean test_digitalOut_getAll,
+            boolean test_digitalOut_getIdx,
+            boolean test_digitalOut_setAll,
+            boolean test_digitalOut_setIdx,
+            boolean test_oscillate,
+            boolean test_memory
+    ) {
+        if (debugEnable) {
+            TS_SerialComMessageBroker.d.infoEnable = true;
+        }
+
         //USAGE: GENERAL------------------------------------------
-        d.cr("test", "chipName", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> chip.chipName()));
+        if (test_chipname) {
+            d.cr("test", "chipName", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> chip.chipName()));
+        }
 
         //USAGE: DIGITAL IN GET-----------------------------------
-        d.cr("test", "digitalIn.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalIn.refreshAll()));
-        if (false) {
+        if (test_digitalIn_getAll) {
+            d.cr("test", "digitalIn.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalIn.refreshAll()));
+        }
+        if (test_digitalIn_getIdx) {
             IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
                 d.cr("test", "chip.digitalIn.pin(" + pinNumber_fr1_to32 + ").getValueFromChip", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> {
                     return chip.digitalIn.pin(pinNumber_fr1_to32).getValueFromChip();
@@ -25,8 +43,10 @@ public class TS_SerialComTestJavaCode {
         }
 
         //USAGE: DIGITAL OUT GET----------------------------------
-        d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.refreshAll()));
-        if (false) {
+        if (test_digitalOut_getAll) {
+            d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.refreshAll()));
+        }
+        if (test_digitalOut_getIdx) {
             IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
                 d.cr("test", "chip.digitalOut.pin(" + pinNumber_fr1_to32 + ").getValueFromChip", TS_SerialComChip_KinConyKC868_A32_R1_2.callOptional(chip -> {
                     return chip.digitalOut.pin(pinNumber_fr1_to32).getValueFromChip();
@@ -34,16 +54,16 @@ public class TS_SerialComTestJavaCode {
             });
         }
         //USAGE: DIGITAL OUT SET----------------------------------
-        d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.setAll(true)));
-        d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.setAll(false)));
-        if (false) {
+        if (test_digitalOut_setAll) {
+            d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.setAll(true)));
+            d.cr("test", "digitalOut.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.setAll(false)));
+        }
+        if (test_digitalOut_setIdx) {
             IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
                 d.cr("test", "chip.digitalOut.pin(" + pinNumber_fr1_to32 + ").setValue(true)", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> {
                     return chip.digitalOut.pin(pinNumber_fr1_to32).setValue(true);
                 }));
             });
-        }
-        if (false) {
             IntStream.rangeClosed(1, 32).forEachOrdered(pinNumber_fr1_to32 -> {
                 d.cr("test", "chip.digitalOut.pin(" + pinNumber_fr1_to32 + ").setValue(false)", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> {
                     return chip.digitalOut.pin(pinNumber_fr1_to32).setValue(false);
@@ -51,13 +71,16 @@ public class TS_SerialComTestJavaCode {
             });
         }
         //USAGE: DIGITAL OUT OSCILLATE---------------------------
-        d.cr("test", "digitalOut.oscillate", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.pin(12).oscillate(2, 1, 5)));
+        if (test_oscillate) {
+            d.cr("test", "digitalOut.oscillate", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.digitalOut.pin(12).oscillate(2, 1, 5)));
+        }
 
-        //USAGE: TIMER-------------------------------------------
-        d.cr("test", "timer.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.refreshAll()));
-        d.cr("test", "timer.set", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.set(2, 15)));
-        d.cr("test", "timer.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.refreshAll()));
-        d.cr("test", "timer.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.timer.refreshAll()));
-
+        //USAGE: MEMORY-------------------------------------------
+        if (test_memory) {
+            d.cr("test", "memory.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.mem_int.refreshAll()));
+            d.cr("test", "memory.set", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.mem_int.set(1, 15)));
+            d.cr("test", "memory.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.mem_int.refreshAll()));
+            d.cr("test", "memory.refreshAll", TS_SerialComChip_KinConyKC868_A32_R1_2.callBoolResult(chip -> chip.mem_int.refreshAll()));
+        }
     }
 }

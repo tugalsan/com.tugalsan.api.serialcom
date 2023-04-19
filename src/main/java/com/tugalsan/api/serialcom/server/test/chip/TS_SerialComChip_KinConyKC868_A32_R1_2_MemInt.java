@@ -5,22 +5,22 @@ import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.string.server.TS_StringUtils;
 import java.util.stream.IntStream;
 
-public class TS_SerialComChip_KinConyKC868_A32_R1_2_Timer {
+public class TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt {
 
-    final private static TS_Log d = TS_Log.of(TS_SerialComChip_KinConyKC868_A32_R1_2_Timer.class);
+    final private static TS_Log d = TS_Log.of(TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt.class);
 
-    private TS_SerialComChip_KinConyKC868_A32_R1_2_Timer(TS_SerialComChip_KinConyKC868_A32_R1_2 chip) {
+    private TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt(TS_SerialComChip_KinConyKC868_A32_R1_2 chip) {
         this.chip = chip;
     }
     final private TS_SerialComChip_KinConyKC868_A32_R1_2 chip;
     final private int[] buffer = new int[32];
 
-    public static TS_SerialComChip_KinConyKC868_A32_R1_2_Timer of(TS_SerialComChip_KinConyKC868_A32_R1_2 chip) {
-        return new TS_SerialComChip_KinConyKC868_A32_R1_2_Timer(chip);
+    public static TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt of(TS_SerialComChip_KinConyKC868_A32_R1_2 chip) {
+        return new TS_SerialComChip_KinConyKC868_A32_R1_2_MemInt(chip);
     }
 
     public boolean refreshAll() {
-        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.getTimer_All();
+        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.getMemInt_All();
         var reply = chip.mb.sendTheCommand_and_fetchMeReplyInMaxSecondsOf(cmd, chip.timeout, chip.validReplyPrefix, true);
         if (reply.isEmpty()) {
             return false;
@@ -51,7 +51,7 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_Timer {
     }
 
     public boolean set(int pinNumber_fr1_to32, int secDuration) {
-        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.setTimer_fr1_to32(pinNumber_fr1_to32, secDuration);
+        var cmd = TS_SerialComChip_KinConyKC868_A32_R1_2_CommandBuilder.setMemInt_fr1_to32(pinNumber_fr1_to32, secDuration);
         if (cmd.isEmpty()) {
             return false;
         }

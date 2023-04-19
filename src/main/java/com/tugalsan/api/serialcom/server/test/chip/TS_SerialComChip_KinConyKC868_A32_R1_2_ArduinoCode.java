@@ -8,13 +8,16 @@ public class TS_SerialComChip_KinConyKC868_A32_R1_2_ArduinoCode {
     
     
     /* 
-         //------------------------------------ DEFINE -----------------------------------------------------------------------
+     //------------------------------------ DEFINE -----------------------------------------------------------------------
 
 #define TA_SerialConnection_WAIT_UNTIL_SECONDS 3
-#define TA_SerialConnection_WAIT_UNTIL_CONNECTION true
+#define TA_SerialConnection_WAIT_UNTIL_CONNECTION false
 #define TA_SerialConnection_WAIT_IN_BAUDRATE 115200
 #define TA_SerialCommandFetcher_BUFFER_SIZE 60
 #define INFO_TA_SerialCommandHandler false
+#define INFO_TA_SerialCommandHandler_PIN_COUNT 32
+#define INFO_TA_SerialCommandHandler_MEM_INT_DEFAULT_VALUE 5
+#define INFO_TA_Chip_KinCony_KC868_A32_R1_2 false
 
 //------------------------------------ STRING HANDLER -----------------------------------------------------------------------
 
@@ -88,7 +91,7 @@ String TA_StringTokenizer::nextToken() {
 class TA_TimeHandler {
 public:
   TA_TimeHandler();
-  void loop();
+  unsigned long loop();
   unsigned long current();
   unsigned long previous();
   unsigned long delta();
@@ -110,10 +113,12 @@ unsigned long TA_TimeHandler::previous() {
 unsigned long TA_TimeHandler::delta() {
   return _delta;
 }
-void TA_TimeHandler::loop() {
+unsigned long TA_TimeHandler::loop() {
+  delay(20);
   _previous = _current;
   _current = millis();
   _delta = _current - _previous;
+  return _current;
 }
 TA_TimeHandler timeHandler;
 
@@ -210,29 +215,75 @@ PCF8574 _pcf8574_R4(&_I2C_1, 0x22, 15, 13);
 class TA_Chip_KinCony_KC868_A32_R1_2 {
 public:
   TA_Chip_KinCony_KC868_A32_R1_2();
-  String name();
   void setup();
+  void loop(unsigned long currentTime);
+  String name();
   bool isValidPinNumber(int pinNumber);
   bool getDI_fr1_to32(int pinNumber);
   bool getDO_fr1_to32(int pinNumber);
   bool setDO_fr1_to32(int pinNumber, bool value);
-  void loop();
   bool getButtonCurrent_fr1_to32(int pinNumber);
   bool getButtonPrevious_fr1_to32(int pinNumber);
+  bool oscillateIs(int pinNumber);
+  bool oscillateSet(int pinNumber, int secDuration, int secGap, int count, unsigned long currentTime);
 private:
+  bool _setDO_fr1_to32(int pinNumber, bool value);
+  bool __fetchDI_fr1_to32(int pinNumber);  //RUN ONCE EVERY LOOP!
+  bool __fetchDO_fr1_to32(int pinNumber);  //RUN ONCE EVERY LOOP!
+  unsigned long _oscillateStart[32];
+  bool _oscillateSet(int pinNumber, int secDuration, int secGap, int count, unsigned long currentTime);
+  bool _oscillateReset(int pinNumber);
+  int _oscillateDuration[32];
+  int _oscillateGap[32];
+  int _oscillateCount[32];
   bool _DIButtonValuePrevious[32];
   bool _DIButtonValueCurrent[32];
   bool _DIButtonState0[32];
   bool _DIButtonState1[32];
   bool _DIButtonState2[32];
   bool _DIButtonState3[32];
+  int _DIButtonStatePhase = 0;
+  bool _DIRegister[32];
+  bool _DORegister[32];
 };
 TA_Chip_KinCony_KC868_A32_R1_2::TA_Chip_KinCony_KC868_A32_R1_2() {
+}
+bool TA_Chip_KinCony_KC868_A32_R1_2::_oscillateReset(int pinNumber) {
+  if (!isValidPinNumber(pinNumber)) {
+    return false;
+  }
+  _oscillateCount[pinNumber - 1] = 0;
+  return true;
+}
+bool TA_Chip_KinCony_KC868_A32_R1_2::oscillateSet(int pinNumber, int secDuration, int secGap, int count, unsigned long currentTime) {
+  if (!isValidPinNumber(pinNumber)) {
+    return false;
+  }
+  _oscillateStart[pinNumber - 1] = currentTime;
+  _oscillateDuration[pinNumber - 1] = secDuration * 1000;
+  _oscillateGap[pinNumber - 1] = secGap * 1000;
+  _oscillateCount[pinNumber - 1] = count;
+  return true;
+}
+bool TA_Chip_KinCony_KC868_A32_R1_2::oscillateIs(int pinNumber) {
+  return _oscillateCount[pinNumber - 1] != 0;
 }
 bool TA_Chip_KinCony_KC868_A32_R1_2::isValidPinNumber(int pinNumber) {
   return pinNumber >= 1 && pinNumber <= 32;
 }
 bool TA_Chip_KinCony_KC868_A32_R1_2::getDI_fr1_to32(int pinNumber) {
+  if (!isValidPinNumber(pinNumber)) {
+    return false;
+  }
+  return _DIRegister[pinNumber - 1];
+}
+bool TA_Chip_KinCony_KC868_A32_R1_2::getDO_fr1_to32(int pinNumber) {
+  if (!isValidPinNumber(pinNumber)) {
+    return false;
+  }
+  return _DORegister[pinNumber - 1];
+}
+bool TA_Chip_KinCony_KC868_A32_R1_2::__fetchDI_fr1_to32(int pinNumber) {
   if (!isValidPinNumber(pinNumber)) {
     return false;
   }
@@ -277,7 +328,7 @@ bool TA_Chip_KinCony_KC868_A32_R1_2::getDI_fr1_to32(int pinNumber) {
     if (pinNumber == 32) return _pcf8574_I4.digitalRead(P7) == LOW;
   }
 }
-bool TA_Chip_KinCony_KC868_A32_R1_2::getDO_fr1_to32(int pinNumber) {
+bool TA_Chip_KinCony_KC868_A32_R1_2::__fetchDO_fr1_to32(int pinNumber) {
   if (!isValidPinNumber(pinNumber)) {
     return false;
   }
@@ -322,7 +373,7 @@ bool TA_Chip_KinCony_KC868_A32_R1_2::getDO_fr1_to32(int pinNumber) {
     if (pinNumber == 32) return _pcf8574_R4.digitalRead(P7) == LOW;
   }
 }
-bool TA_Chip_KinCony_KC868_A32_R1_2::setDO_fr1_to32(int pinNumber, bool value) {
+bool TA_Chip_KinCony_KC868_A32_R1_2::_setDO_fr1_to32(int pinNumber, bool value) {
   if (!isValidPinNumber(pinNumber)) {
     return false;
   }
@@ -368,6 +419,9 @@ bool TA_Chip_KinCony_KC868_A32_R1_2::setDO_fr1_to32(int pinNumber, bool value) {
     if (pinNumber == 32) _pcf8574_R4.digitalWrite(P7, value ? LOW : HIGH);
   }
   return true;
+}
+bool TA_Chip_KinCony_KC868_A32_R1_2::setDO_fr1_to32(int pinNumber, bool value) {
+  return _oscillateReset(pinNumber) && _setDO_fr1_to32(pinNumber, value);
 }
 void TA_Chip_KinCony_KC868_A32_R1_2::setup() {
   for (int i = 0; i <= 7; i++) {
@@ -427,51 +481,119 @@ bool TA_Chip_KinCony_KC868_A32_R1_2::getButtonCurrent_fr1_to32(int pinNumber) {
   if (!isValidPinNumber(pinNumber)) {
     return false;
   }
-  return _DIButtonValueCurrent[pinNumber];
+  return _DIButtonValueCurrent[pinNumber - 1];
 }
 bool TA_Chip_KinCony_KC868_A32_R1_2::getButtonPrevious_fr1_to32(int pinNumber) {
   if (!isValidPinNumber(pinNumber)) {
     return false;
   }
-  return _DIButtonValuePrevious[pinNumber];
+  return _DIButtonValuePrevious[pinNumber - 1];
 }
-void TA_Chip_KinCony_KC868_A32_R1_2::loop() {
-  for (int i = 0; i < 8; i++) {
-    _DIButtonState0[i + 8 * 0] = _pcf8574_I1.digitalRead(i) == LOW;
-    _DIButtonState0[i + 8 * 1] = _pcf8574_I2.digitalRead(i) == LOW;
-    _DIButtonState0[i + 8 * 2] = _pcf8574_I3.digitalRead(i) == LOW;
-    _DIButtonState0[i + 8 * 3] = _pcf8574_I4.digitalRead(i) == LOW;
+void TA_Chip_KinCony_KC868_A32_R1_2::loop(unsigned long currentTime) {
+  //REGISTER
+  for (int i = 0; i < 32; i++) {
+    int pinNumber = i + 1;
+    _DIRegister[i] = __fetchDI_fr1_to32(pinNumber);
+    _DORegister[i] = __fetchDO_fr1_to32(pinNumber);
   }
-  delay(20);
-  for (int i = 0; i < 8; i++) {
-    _DIButtonState1[i + 8 * 0] = _pcf8574_I1.digitalRead(i) == LOW;
-    _DIButtonState1[i + 8 * 1] = _pcf8574_I2.digitalRead(i) == LOW;
-    _DIButtonState1[i + 8 * 2] = _pcf8574_I3.digitalRead(i) == LOW;
-    _DIButtonState1[i + 8 * 3] = _pcf8574_I4.digitalRead(i) == LOW;
+  //OSCILLATE
+  for (int i = 0; i < 32; i++) {
+    int pinNumber = i + 1;
+    if (!oscillateIs(pinNumber)) {
+      continue;
+    }
+    bool pinState = getDO_fr1_to32(pinNumber);
+    unsigned long duration = _oscillateDuration[i];
+    unsigned long gap = _oscillateGap[i];
+    unsigned long period = duration + gap;
+    unsigned long wholeDuration = period * _oscillateCount[i];
+    unsigned long deltaDuration = currentTime - _oscillateStart[i];
+    if (INFO_TA_Chip_KinCony_KC868_A32_R1_2) {
+      Serial.print("INFO_TA_Chip_KinCony_KC868_A32_R1_2: OSCILLATE_CALC_PIN: ");
+      Serial.print(pinNumber);
+      Serial.print(", cur:");
+      Serial.print(currentTime);
+      Serial.print(", state:");
+      Serial.print(pinState);
+      Serial.print(", dur:");
+      Serial.print(duration);
+      Serial.print(", gap:");
+      Serial.print(gap);
+      Serial.print(", per:");
+      Serial.print(period);
+      Serial.print(", whlDur:");
+      Serial.print(wholeDuration);
+      Serial.print(", delDur:");
+      Serial.println(deltaDuration);
+    }
+    if (deltaDuration > wholeDuration) {  //SHUTDOWN
+      if (INFO_TA_Chip_KinCony_KC868_A32_R1_2) {
+        Serial.print("INFO_TA_Chip_KinCony_KC868_A32_R1_2: OSCILLATE_PIN_SHUTDOWN: ");
+        Serial.println(pinNumber);
+      }
+      setDO_fr1_to32(pinNumber, false);
+      continue;
+    }
+    while (deltaDuration > period) {  //SLIM UP DELTA INTO PERIOD
+      if (INFO_TA_Chip_KinCony_KC868_A32_R1_2) {
+        Serial.print("INFO_TA_Chip_KinCony_KC868_A32_R1_2: OSCILLATE_DELTA_DURATION_SHORTENED: ");
+        Serial.println(pinNumber);
+      }
+      deltaDuration -= period;
+    }
+    if (INFO_TA_Chip_KinCony_KC868_A32_R1_2) {  //PRINT SLIM DELTA
+      Serial.print("INFO_TA_Chip_KinCony_KC868_A32_R1_2: deltaDuration.short:");
+      Serial.println(deltaDuration);
+    }
+    if (deltaDuration < duration) {  //IF CONTINUE AND IN DURATION
+      if (INFO_TA_Chip_KinCony_KC868_A32_R1_2) {
+        Serial.print("INFO_TA_Chip_KinCony_KC868_A32_R1_2: OSCILLATE_PIN_IN_DURATION: ");
+        Serial.println(pinNumber);
+      }
+      if (!pinState) _setDO_fr1_to32(pinNumber, true);
+      continue;
+    } else {  //IF CONTINUE AND IN GAP
+      if (INFO_TA_Chip_KinCony_KC868_A32_R1_2) {
+        Serial.print("INFO_TA_Chip_KinCony_KC868_A32_R1_2: OSCILLATE_PIN_IN_GAP: ");
+        Serial.println(pinNumber);
+      }
+      if (pinState) _setDO_fr1_to32(pinNumber, false);
+      continue;
+    }
   }
-  delay(20);
-  for (int i = 0; i < 8; i++) {
-    _DIButtonState2[i + 8 * 0] = _pcf8574_I1.digitalRead(i) == LOW;
-    _DIButtonState2[i + 8 * 1] = _pcf8574_I2.digitalRead(i) == LOW;
-    _DIButtonState2[i + 8 * 2] = _pcf8574_I3.digitalRead(i) == LOW;
-    _DIButtonState2[i + 8 * 3] = _pcf8574_I4.digitalRead(i) == LOW;
+
+  //DI BUTTON STATE AND RETURN
+  if (_DIButtonStatePhase == 0) {
+    for (int i = 0; i < 32; i++) {
+      _DIButtonState0[i] = _DIRegister[i];
+    }
+    return;
   }
-  delay(20);
-  for (int i = 0; i < 8; i++) {
-    _DIButtonState3[i + 8 * 0] = _pcf8574_I1.digitalRead(i) == LOW;
-    _DIButtonState3[i + 8 * 1] = _pcf8574_I2.digitalRead(i) == LOW;
-    _DIButtonState3[i + 8 * 2] = _pcf8574_I3.digitalRead(i) == LOW;
-    _DIButtonState3[i + 8 * 3] = _pcf8574_I4.digitalRead(i) == LOW;
+  if (_DIButtonStatePhase == 1) {
+    for (int i = 0; i < 32; i++) {
+      _DIButtonState1[i] = _DIRegister[i];
+    }
+    return;
   }
-  for (int i = 0; i < 8; i++) {
-    _DIButtonValuePrevious[i + 8 * 0] = _DIButtonValueCurrent[i + 8 * 0];
-    _DIButtonValuePrevious[i + 8 * 1] = _DIButtonValueCurrent[i + 8 * 1];
-    _DIButtonValuePrevious[i + 8 * 2] = _DIButtonValueCurrent[i + 8 * 2];
-    _DIButtonValuePrevious[i + 8 * 3] = _DIButtonValueCurrent[i + 8 * 3];
-    _DIButtonValueCurrent[i + 8 * 0] = _DIButtonState0[i + 8 * 0] && _DIButtonState1[i + 8 * 0] && _DIButtonState2[i + 8 * 0] && _DIButtonState3[i + 8 * 0];
-    _DIButtonValueCurrent[i + 8 * 1] = _DIButtonState0[i + 8 * 1] && _DIButtonState1[i + 8 * 1] && _DIButtonState2[i + 8 * 0] && _DIButtonState3[i + 8 * 1];
-    _DIButtonValueCurrent[i + 8 * 2] = _DIButtonState0[i + 8 * 2] && _DIButtonState1[i + 8 * 2] && _DIButtonState2[i + 8 * 0] && _DIButtonState3[i + 8 * 2];
-    _DIButtonValueCurrent[i + 8 * 3] = _DIButtonState0[i + 8 * 3] && _DIButtonState1[i + 8 * 3] && _DIButtonState2[i + 8 * 0] && _DIButtonState3[i + 8 * 3];
+  if (_DIButtonStatePhase == 2) {
+    for (int i = 0; i < 32; i++) {
+      _DIButtonState2[i] = _DIRegister[i];
+    }
+    return;
+  }
+  if (_DIButtonStatePhase == 3) {
+    for (int i = 0; i < 32; i++) {
+      _DIButtonState3[i] = _DIRegister[i];
+    }
+    return;
+  }
+  if (_DIButtonStatePhase == 4) {
+    for (int i = 0; i < 32; i++) {
+      _DIButtonValuePrevious[i] = _DIButtonValueCurrent[i];
+      _DIButtonValueCurrent[i] = _DIButtonState0[i] && _DIButtonState1[i] && _DIButtonState2[i] && _DIButtonState3[i];
+    }
+    _DIButtonStatePhase = 0;
+    return;
   }
 }
 TA_Chip_KinCony_KC868_A32_R1_2 chip;
@@ -483,18 +605,15 @@ public:
   TA_SerialCommandHandler();
   void usage();
   void loop(unsigned long currentTime);
-  void forEach(String command, unsigned long currentTime);
-  void oscillateReset(int pinNumber);
-  bool oscillateIs(int pinNumber);
-  void oscillateSet(int pinNumber);
-  int timerDuration[32];
+  int mem_int[INFO_TA_SerialCommandHandler_PIN_COUNT];
 private:
+  void _forEachToken(String command, unsigned long currentTime);
   bool _IfCommandNotValid(String command);
   bool _IfThereIsNoNextToken(TA_StringTokenizer tokens, String command, String errorLabel);
   bool _IfCommand_chipName(String command, String cmdName);
   bool _IfCommand_DIGetAll(String command, String cmdName);
   bool _IfCommand_DOGetAll(String command, String cmdName);
-  bool _IfCommand_TimerGetAll(String command, String cmdName);
+  bool _IfCommand_MemIntGetAll(String command, String cmdName);
   bool _IfCommand_DOSetAllTrue(String command, String cmdName);
   bool _IfCommand_DOSetAllFalse(String command, String cmdName);
   bool _isNotValidPinNumber(String command, String pinNumberName, String errorConversion, String errorChipNotCompatible);
@@ -503,33 +622,28 @@ private:
   bool _IfCommand_DOSetIdxTrue(String command, String cmdName, int pinNumber);
   bool _IfCommand_DOSetIdxFalse(String command, String cmdName, int pinNumber);
   bool _isNotValidInt(String command, String integerName, String errorLabel);
-  bool _IfCommand_TimerSetIdx(String command, String cmdName, int pinNumber, int duration);
+  bool _IfCommand_MemIntSetIdx(String command, String cmdName, int pinNumber, int duration);
   bool _IfCommand_DOSetIdxTrueUntil(String command, String cmdName, int pinNumber, int duration, int gap, int count, unsigned long currentTime);
   void _error(String command, String errorLabel);
-  unsigned long _oscillateStart[32];
-  int _oscillateDuration[32];
-  int _oscillateGap[32];
-  int _oscillateCount[32];
 };
 TA_SerialCommandHandler::TA_SerialCommandHandler() {
-  for (int i = 0; i < 32; i++) timerDuration[i] = 5;
+  //TODO
+  //for (int i = 0; i < INFO_TA_SerialCommandHandler_PIN_COUNT; i++) mem_int[i] = INFO_TA_SerialCommandHandler_MEM_INT_DEFAULT_VALUE;
+  //this is not working. Why i=1, 3, 5, ... 15 is always 3 at init ?
 }
-void TA_SerialCommandHandler::oscillateSet(int pinNumber) {
-  _oscillateDuration[pinNumber] = 1;
-  _oscillateGap[pinNumber] = 2;
-  _oscillateCount[pinNumber] = 999;
+void TA_SerialCommandHandler::loop(unsigned long currentTime) {
+  if (serialCommandFetcher.hasNext()) {
+    _forEachToken(serialCommandFetcher.next(), currentTime);
+  }
 }
-bool TA_SerialCommandHandler::oscillateIs(int pinNumber) {
-  return _oscillateCount[pinNumber] != 0;
-}
-bool TA_SerialCommandHandler::_IfCommand_TimerSetIdx(String command, String cmdName, int pinNumber, int duration) {
-  if (!cmdName.equals("!TIMER_SET_IDX")) {
+bool TA_SerialCommandHandler::_IfCommand_MemIntSetIdx(String command, String cmdName, int pinNumber, int value) {
+  if (!cmdName.equals("!MEMINT_SET_IDX")) {
     return false;
   }
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.println(F("->DONE"));
-  timerDuration[pinNumber - 1] = duration;
+  mem_int[pinNumber - 1] = value;
   return true;
 }
 bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrueUntil(String command, String cmdName, int pinNumber, int duration, int gap, int count, unsigned long currentTime) {
@@ -539,11 +653,7 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrueUntil(String command, Strin
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.println(F("->DONE"));
-  _oscillateStart[pinNumber - 1] = currentTime;
-  _oscillateDuration[pinNumber - 1] = duration * 1000;
-  _oscillateGap[pinNumber - 1] = gap * 1000;
-  _oscillateCount[pinNumber - 1] = count;
-  return true;
+  return chip.oscillateSet(pinNumber, duration, gap, count, currentTime);
 }
 bool TA_SerialCommandHandler::_isNotValidInt(String command, String integerName, String errorLabel) {
   if (!stringHandler.isInt(integerName)) {
@@ -581,15 +691,15 @@ bool TA_SerialCommandHandler::_IfCommand_chipName(String command, String cmdName
   Serial.println(chip.name());
   return true;
 }
-bool TA_SerialCommandHandler::_IfCommand_TimerGetAll(String command, String cmdName) {
-  if (!cmdName.equals("!TIMER_GET_ALL")) {
+bool TA_SerialCommandHandler::_IfCommand_MemIntGetAll(String command, String cmdName) {
+  if (!cmdName.equals("!MEMINT_GET_ALL")) {
     return false;
   }
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.print(F("->"));
-  for (int i = 0; i < 32; i++) {
-    Serial.print(timerDuration[i]);
+  for (int i = 0; i < INFO_TA_SerialCommandHandler_PIN_COUNT; i++) {
+    Serial.print(mem_int[i]);
     Serial.print(F(" "));
   }
   Serial.println(F(""));
@@ -602,8 +712,9 @@ bool TA_SerialCommandHandler::_IfCommand_DIGetAll(String command, String cmdName
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.print(F("->"));
-  for (int i = 1; i <= 32; i++) {
-    Serial.print(chip.getDI_fr1_to32(i));
+  for (int i = 0; i < 32; i++) {
+    int pinNumber = i + 1;
+    Serial.print(chip.getDI_fr1_to32(pinNumber));
   }
   Serial.println(F(""));
   return true;
@@ -615,8 +726,9 @@ bool TA_SerialCommandHandler::_IfCommand_DOGetAll(String command, String cmdName
   Serial.print(F("REPLY_OF:"));
   Serial.print(command);
   Serial.print(F("->"));
-  for (int i = 1; i <= 32; i++) {
-    Serial.print(chip.getDO_fr1_to32(i));
+  for (int i = 0; i < 32; i++) {
+    int pinNumber = i + 1;
+    Serial.print(chip.getDO_fr1_to32(pinNumber));
   }
   Serial.println(F(""));
   return true;
@@ -629,11 +741,9 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetAllTrue(String command, String cmd
   Serial.print(command);
   Serial.print(F("->"));
   bool result = true;
-  for (int i = 1; i <= 32; i++) {
-    bool innerResult = chip.setDO_fr1_to32(i, true);
-    if (innerResult) {
-      _oscillateCount[i - 1] = 0;
-    }
+  for (int i = 0; i < 32; i++) {
+    int pinNumber = i + 1;
+    bool innerResult = chip.setDO_fr1_to32(pinNumber, true);
     result = result && innerResult;
   }
   Serial.println(result ? F("->DONE") : F("->SKIPPED"));
@@ -647,8 +757,9 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetAllFalse(String command, String cm
   Serial.print(command);
   Serial.print(F("->"));
   bool result = true;
-  for (int i = 1; i <= 32; i++) {
-    result = result && chip.setDO_fr1_to32(i, false);
+  for (int i = 0; i < 32; i++) {
+    int pinNumber = i + 1;
+    result = result && chip.setDO_fr1_to32(pinNumber, false);
   }
   Serial.println(result ? F("->DONE") : F("->SKIPPED"));
   return true;
@@ -691,7 +802,7 @@ bool TA_SerialCommandHandler::_IfCommand_DOGetIdx(String command, String cmdName
 }
 void TA_SerialCommandHandler::_error(String command, String errorLabel) {
   Serial.print(errorLabel);
-  Serial.print(F(": "));
+  Serial.print(F(":"));
   Serial.println(command);
 }
 bool TA_SerialCommandHandler::_IfCommand_DOSetIdxFalse(String command, String cmdName, int pinNumber) {
@@ -703,7 +814,6 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetIdxFalse(String command, String cm
   Serial.print(F("->"));
   if (chip.setDO_fr1_to32(pinNumber, false)) {
     Serial.println(F("DONE"));
-    _oscillateCount[pinNumber - 1] = 0;
   } else {
     Serial.println(F("SKIPPED"));
   }
@@ -718,82 +828,10 @@ bool TA_SerialCommandHandler::_IfCommand_DOSetIdxTrue(String command, String cmd
   Serial.print(F("->"));
   if (chip.setDO_fr1_to32(pinNumber, true)) {
     Serial.println(F("DONE"));
-    _oscillateCount[pinNumber - 1] = 0;
   } else {
     Serial.println(F("SKIPPED"));
   }
   return true;
-}
-void TA_SerialCommandHandler::oscillateReset(int pinNumber) {
-  chip.setDO_fr1_to32(pinNumber, false);
-  _oscillateCount[pinNumber - 1] = 0;
-}
-void TA_SerialCommandHandler::loop(unsigned long currentTime) {
-  for (int i = 0; i < 32; i++) {
-    if (_oscillateCount[i] == 0) {
-      continue;
-    }
-    bool pinState = chip.getDO_fr1_to32(i + 1);
-    unsigned long period = _oscillateDuration[i] + _oscillateGap[i];
-    unsigned long wholeDuration = period * _oscillateCount[i];
-    unsigned long deltaDuration = currentTime - _oscillateStart[i];
-    if (INFO_TA_SerialCommandHandler) {
-      Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_CALC_PIN: ");
-      Serial.print(i + 1);
-      Serial.print(", cur:");
-      Serial.print(currentTime);
-      Serial.print(", state:");
-      Serial.print(pinState);
-      Serial.print(", dur:");
-      Serial.print(_oscillateDuration[i]);
-      Serial.print(", gap:");
-      Serial.print(_oscillateGap[i]);
-      Serial.print(", per:");
-      Serial.print(period);
-      Serial.print(", whlDur:");
-      Serial.print(wholeDuration);
-      Serial.print(", delDur:");
-      Serial.println(deltaDuration);
-    }
-    if (deltaDuration > wholeDuration) {
-      if (INFO_TA_SerialCommandHandler) {
-        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_RESET_PIN: ");
-        Serial.println(i + 1);
-      }
-      _oscillateCount[i] = 0;
-      if (pinState) {
-        chip.setDO_fr1_to32(i + 1, false);
-      }
-      continue;
-    }
-    while (deltaDuration > period) {
-      if (INFO_TA_SerialCommandHandler) {
-        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_DELTA_DURATION_SHORTENED: ");
-        Serial.println(i + 1);
-      }
-      deltaDuration -= period;
-    }
-    if (INFO_TA_SerialCommandHandler) {
-      Serial.print("INFO_TA_SerialCommandHandler: deltaDuration.short:");
-      Serial.println(deltaDuration);
-    }
-    if (deltaDuration < _oscillateDuration[i] && !pinState) {
-      if (INFO_TA_SerialCommandHandler) {
-        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_PIN_SET_TRUE: ");
-        Serial.println(i + 1);
-      }
-      chip.setDO_fr1_to32(i + 1, true);
-      continue;
-    }
-    if (deltaDuration > _oscillateDuration[i] && pinState) {
-      if (INFO_TA_SerialCommandHandler) {
-        Serial.print("INFO_TA_SerialCommandHandler: OSCILLATE_PIN_SET_FALSE: ");
-        Serial.println(i + 1);
-      }
-      chip.setDO_fr1_to32(i + 1, false);
-      continue;
-    }
-  }
 }
 void TA_SerialCommandHandler::usage() {
   Serial.println(F("USAGE: GENERAL------------------------------------------"));
@@ -811,11 +849,11 @@ void TA_SerialCommandHandler::usage() {
   Serial.println(F("USAGE: setDigitalOutIdxFalse as (cmd, pin1-32) ex: !DO_SET_IDX_FALSE 1"));
   Serial.println(F("USAGE: DIGITAL OUT OSCILLATE---------------------------"));
   Serial.println(F("USAGE: setDigitalOutOscillating as (cmd, pin1-32, secDuration, secGap, count) ex: !DO_SET_IDX_TRUE_UNTIL 12 2 1 5"));
-  Serial.println(F("USAGE: TIMER-------------------------------------------"));
-  Serial.println(F("USAGE: getTimerAll as (cmd) ex: !TIMER_GET_ALL"));
-  Serial.println(F("USAGE: setTimerIdx as (cmd, pin2-32step2, secDuration) ex: !TIMER_SET_IDX 5 2"));
+  Serial.println(F("USAGE: MEMORY-------------------------------------------"));
+  Serial.println(F("USAGE: getMemIntAll as (cmd) ex: !MEMINT_GET_ALL"));
+  Serial.println(F("USAGE: setMemIntIdx as (cmd, pin2-32step2, secDuration) ex: !MEMINT_SET_IDX 5 2"));
 }
-void TA_SerialCommandHandler::forEach(String command, unsigned long currentTime) {
+void TA_SerialCommandHandler::_forEachToken(String command, unsigned long currentTime) {
   if (_IfCommandNotValid(command)) return;
   TA_StringTokenizer tokens(command, F(" "));
   if (_IfThereIsNoNextToken(tokens, command, F("ERROR_CMD_UNCOMPLETE"))) return;
@@ -825,7 +863,7 @@ void TA_SerialCommandHandler::forEach(String command, unsigned long currentTime)
     Serial.println(cmdName);
   }
   if (_IfCommand_chipName(command, cmdName)) return;
-  if (_IfCommand_TimerGetAll(command, cmdName)) return;
+  if (_IfCommand_MemIntGetAll(command, cmdName)) return;
   if (_IfCommand_DIGetAll(command, cmdName)) return;
   if (_IfCommand_DOGetAll(command, cmdName)) return;
   if (_IfCommand_DOSetAllTrue(command, cmdName)) return;
@@ -850,7 +888,7 @@ void TA_SerialCommandHandler::forEach(String command, unsigned long currentTime)
     Serial.print("INFO_TA_SerialCommandHandler:duration:");
     Serial.println(duration);
   }
-  if (_IfCommand_TimerSetIdx(command, cmdName, pinNumber, duration)) return;
+  if (_IfCommand_MemIntSetIdx(command, cmdName, pinNumber, duration)) return;
   if (_IfThereIsNoNextToken(tokens, command, F("ERROR_CMD_GAP_NAME_UNCOMPLETE"))) return;
   String gapName = tokens.nextToken();
   if (_isNotValidInt(command, gapName, F("ERROR_CMD_GAP_NAME_NOT_NUMBER"))) return;
@@ -924,25 +962,25 @@ void TA_SurfaceTreatmentBath16::loop(unsigned long currentTime) {
     }
     //STOPPER MANUAL | AUTO
     if (buttonReleased || (_state[bath] == TIMER_RUNNING_BY_SENSOR && !sensorActive)) {
-      serialCommandHandler.oscillateReset(pinNumber);
+      chip.setDO_fr1_to32(pinNumber, false);
       _startTime[bath] = 0;
       _state[bath] = STOPPED;
       continue;
     }
     //STOPPER ALARM
     if (_state[bath] == TIMER_RUNNING_BY_BUTTON || _state[bath] == TIMER_RUNNING_BY_SENSOR) {
-      if ((_startTime[bath] + serialCommandHandler.timerDuration[i]) > currentTime) {  //NOT YET
+      if ((_startTime[bath] + serialCommandHandler.mem_int[i]) > currentTime) {  //NOT YET
         continue;
       }
-      serialCommandHandler.oscillateReset(pinNumber);
+      chip.setDO_fr1_to32(pinNumber, false);
       _startTime[bath] = 0;
       _state[bath] = ALARM;
       continue;
     }
     //ALARM
     if (_state[bath] == ALARM) {
-      if (!serialCommandHandler.oscillateIs(pinNumber)) {
-        serialCommandHandler.oscillateSet(pinNumber);
+      if (!chip.oscillateIs(pinNumber)) {
+        chip.oscillateSet(pinNumber, 2, 1, 9999, currentTime);
       }
     }
   }
@@ -969,15 +1007,12 @@ void setup() {
 
 //ARDUINO_THREAD
 void loop() {
-  timeHandler.loop();
-  chip.loop();
-  serialCommandHandler.loop(timeHandler.current());
-  if (serialCommandFetcher.hasNext()) {
-    serialCommandHandler.forEach(
-      serialCommandFetcher.next(), timeHandler.current());
-  }
-  surfaceTreatmentBath16.loop(timeHandler.current());
+  unsigned long curTime = timeHandler.loop();
+  serialCommandHandler.loop(curTime);
+  chip.loop(curTime);
+  //surfaceTreatmentBath16.loop(curTime);
 }
+
 
      */
 }
