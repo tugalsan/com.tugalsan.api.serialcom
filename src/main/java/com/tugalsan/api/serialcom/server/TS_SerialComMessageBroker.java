@@ -1,5 +1,6 @@
 package com.tugalsan.api.serialcom.server;
 
+import com.tugalsan.api.coronator.client.TGS_Coronator;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.TS_ThreadCall;
 import com.tugalsan.api.thread.server.TS_ThreadSafeLst;
@@ -58,22 +59,20 @@ public class TS_SerialComMessageBroker {
             }
             return true;
         };
-        var run = TS_ThreadCall.single(maxDuration, () -> {
-            String reply = null;
-            while (reply == null) {
-                reply = replies.findFirst(val -> condition.validate(val));
-                TS_ThreadWait.of(Duration.ofMillis(100));
-                Thread.yield();
-            }
-            if (filterContainCommand && filterPrefix != null) {
-                reply = reply.substring(filterPrefix.length() + command.length() + "->".length());
-            } else if (filterContainCommand) {
-                reply = reply.substring(command.length() + "->".length());
-            } else if (filterPrefix != null) {
-                reply = reply.substring(filterPrefix.length() + "->".length());
-            }
-            return reply;
-        });
+        var run = TS_ThreadCall.single(maxDuration, () -> TGS_Coronator.ofStr()
+                .anoint(reply -> {
+                    while (reply == null) {
+                        reply = replies.findFirst(val -> condition.validate(val));
+                        TS_ThreadWait.of(Duration.ofMillis(100));
+                        Thread.yield();
+                    }
+                    return reply;
+                })
+                .anointAndCoronateIf(reply -> filterContainCommand && filterPrefix != null, reply -> reply.substring(filterPrefix.length() + command.length() + "->".length()))
+                .anointAndCoronateIf(reply -> filterContainCommand, reply -> reply.substring(command.length() + "->".length()))
+                .anointAndCoronateIf(reply -> filterPrefix != null, reply -> reply.substring(filterPrefix.length() + "->".length()))
+                .coronate()
+        );
         replies.removeAll(val -> condition.validate(val));
         if (run.resultsForSuccessfulOnes.isEmpty() || run.resultsForSuccessfulOnes.get(0) == null) {
             run.exceptions.forEach(e -> {
