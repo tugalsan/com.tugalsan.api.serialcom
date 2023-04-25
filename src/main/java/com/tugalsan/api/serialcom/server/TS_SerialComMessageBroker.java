@@ -31,7 +31,7 @@ public class TS_SerialComMessageBroker {
 
     public void onReply(String reply) {
         replies.add(reply);
-        replies.cropToLengthFast(maxSize);
+        replies.cropToLength_byRemovingFirstItems(maxSize);
         if (d.infoEnable) {
             if (reply.startsWith("REPLY_OF:")) {
                 d.cr("onReply", reply);
