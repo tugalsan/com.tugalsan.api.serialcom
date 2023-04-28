@@ -9,4 +9,5 @@ module com.tugalsan.api.serialcom {
     requires com.tugalsan.api.callable;
     requires com.tugalsan.api.validator;
     exports com.tugalsan.api.serialcom.server;
+    exports com.tugalsan.api.serialcom.server.utils;
 }
