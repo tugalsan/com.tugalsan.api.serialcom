@@ -5,6 +5,7 @@ import com.tugalsan.api.coronator.client.TGS_Coronator;
 import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
+import com.tugalsan.api.stream.client.TGS_StreamUtils;
 import com.tugalsan.api.thread.server.*;
 import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 import java.util.ArrayList;
@@ -33,6 +34,10 @@ public class TS_SerialComUtils {
             return send(serialPort, "\n");
         }
         return result;
+    }
+
+    public static List<String> listNames() {
+        return TGS_StreamUtils.toLst(list().stream().map(p -> name(p)));
     }
 
     public static List<SerialPort> list() {
