@@ -35,7 +35,7 @@ public class TS_SerialComOnReply {
     }
 
     public boolean onSuccess_useAndClose_connection(TGS_RunnableType1<TS_SerialComConnection> con) {
-        return connect_AutoClosable().useAndClose_WithCustomMessageBroker(con);
+        return TGS_UnSafe.call(() -> connect_AutoClosable().useAndClose_WithCustomMessageBroker(con), e -> false);
     }
 
     public boolean onSuccess_useAndClose_defaultMessageBroker(TGS_RunnableType2<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
