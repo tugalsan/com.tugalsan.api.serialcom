@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.*;
 import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.utils.*;
-import com.tugalsan.api.thread.server.TS_ThreadExecutable;
+import com.tugalsan.api.thread.server.safe.TS_ThreadSafeRunnable;
 
 public class TS_SerialComConnection implements AutoCloseable {
 
@@ -71,7 +71,7 @@ public class TS_SerialComConnection implements AutoCloseable {
         }
     }
     final private TS_SerialComMessageBroker messageBroker;
-    private TS_ThreadExecutable threadReply;
+    private TS_ThreadSafeRunnable threadReply;
     final public TGS_RunnableType1<String> onReply;
     final public String parityName;
     final public String stopBitsName;

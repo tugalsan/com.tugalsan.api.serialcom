@@ -6,7 +6,9 @@ import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.stream.client.TGS_StreamUtils;
-import com.tugalsan.api.thread.server.*;
+import com.tugalsan.api.thread.server.async.TS_ThreadAsync;
+import com.tugalsan.api.thread.server.safe.TS_ThreadSafeRunnable;
+import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +61,7 @@ public class TS_SerialComUtils {
         return disconnect(serialPort, null);
     }
 
-    public static boolean disconnect(SerialPort serialPort, TS_ThreadExecutable threadReply) {
+    public static boolean disconnect(SerialPort serialPort, TS_ThreadSafeRunnable threadReply) {
         d.ci("disconnect", "threadReply");
         if (threadReply != null) {
             threadReply.killMe = true;
@@ -69,7 +71,7 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    public static TS_ThreadExecutable connect(SerialPort serialPort, TGS_RunnableType1<String> onReply) {
+    public static TS_ThreadSafeRunnable connect(SerialPort serialPort, TGS_RunnableType1<String> onReply) {
         d.ci("connect", "onReply", onReply != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
@@ -81,7 +83,7 @@ public class TS_SerialComUtils {
             d.ce("connect", "Error on openPort");
             return null;
         }
-        var threadReply = new TS_ThreadExecutable() {
+        var threadReply = new TS_ThreadSafeRunnable() {
 
             private void waitForNewData() {
                 while (serialPort.bytesAvailable() == 0 || serialPort.bytesAvailable() == -1) {
@@ -149,7 +151,7 @@ public class TS_SerialComUtils {
             }
             final private StringBuilder buffer = new StringBuilder();
         };
-        TS_ThreadRun.now(threadReply.setName(d.className + ".connect.threadReply"));
+        TS_ThreadAsync.now(threadReply.setName(d.className + ".connect.threadReply"));
         return threadReply;
     }
 
