@@ -2,10 +2,10 @@ package com.tugalsan.api.serialcom.server;
 
 import com.tugalsan.api.coronator.client.TGS_Coronator;
 import com.tugalsan.api.log.server.TS_Log;
-import com.tugalsan.api.thread.server.async.TS_ThreadAsyncAwait;
+import com.tugalsan.api.thread.server.struct.async.TS_ThreadAsyncAwait;
 import com.tugalsan.api.thread.server.safe.TS_ThreadSafeLst;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
-import com.tugalsan.api.thread.server.async.core.TS_ThreadAsyncCoreTimeoutException;
+import com.tugalsan.api.thread.server.struct.async_core.TS_ThreadAsyncCoreTimeoutException;
 import com.tugalsan.api.validator.client.TGS_ValidatorType1;
 import java.time.Duration;
 import java.util.Optional;

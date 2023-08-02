@@ -6,7 +6,7 @@ import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.stream.client.TGS_StreamUtils;
-import com.tugalsan.api.thread.server.async.TS_ThreadAsync;
+import com.tugalsan.api.thread.server.struct.async.TS_ThreadAsync;
 import com.tugalsan.api.thread.server.safe.TS_ThreadSafeRunnable;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.unsafe.client.TGS_UnSafe;
