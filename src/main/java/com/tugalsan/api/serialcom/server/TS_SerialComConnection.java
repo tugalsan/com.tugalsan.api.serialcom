@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.*;
 import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.utils.*;
-import com.tugalsan.api.thread.server.safe.TS_ThreadSafeTrigger;
+import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 
 public class TS_SerialComConnection implements AutoCloseable {
 
@@ -31,9 +31,9 @@ public class TS_SerialComConnection implements AutoCloseable {
         return successfulPort() && successfulSetup() && successfulConnect() && port.isOpen();
     }
 
-    private final TS_ThreadSafeTrigger killTrigger;
+    private final TS_ThreadSyncTrigger killTrigger;
 
-    private TS_SerialComConnection(TS_ThreadSafeTrigger killTrigger, TS_SerialComOnReply onReply) {
+    private TS_SerialComConnection(TS_ThreadSyncTrigger killTrigger, TS_SerialComOnReply onReply) {
         this.killTrigger = killTrigger;
         //BIND MESSAGE BROKER
         if (onReply.onReply_customMessageBroker == null) {//use default broker
@@ -82,7 +82,7 @@ public class TS_SerialComConnection implements AutoCloseable {
     final public int baudRate;
     final public SerialPort port;
 
-    public static TS_SerialComConnection of(TS_ThreadSafeTrigger killTrigger, TS_SerialComOnReply onReply) {
+    public static TS_SerialComConnection of(TS_ThreadSyncTrigger killTrigger, TS_SerialComOnReply onReply) {
         return new TS_SerialComConnection(killTrigger, onReply);
     }
 

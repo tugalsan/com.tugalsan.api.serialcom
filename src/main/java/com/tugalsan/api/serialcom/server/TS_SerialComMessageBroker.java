@@ -2,10 +2,10 @@ package com.tugalsan.api.serialcom.server;
 
 import com.tugalsan.api.coronator.client.TGS_Coronator;
 import com.tugalsan.api.log.server.TS_Log;
-import com.tugalsan.api.thread.server.safe.TS_ThreadSafeTrigger;
+import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.thread.server.async.TS_ThreadAsyncAwait;
-import com.tugalsan.api.thread.server.safe.TS_ThreadSafeLst;
+import com.tugalsan.api.thread.server.sync.TS_ThreadSyncLst;
 import com.tugalsan.api.thread.server.async.core.TS_ThreadAsyncCoreTimeoutException;
 import com.tugalsan.api.validator.client.TGS_ValidatorType1;
 import java.time.Duration;
@@ -18,7 +18,7 @@ public class TS_SerialComMessageBroker {
     public TS_SerialComMessageBroker(int maxSize) {
         this.maxSize = maxSize;
     }
-    final public TS_ThreadSafeLst<String> replies = new TS_ThreadSafeLst();
+    final public TS_ThreadSyncLst<String> replies = new TS_ThreadSyncLst();
     final public int maxSize;
 
     public static TS_SerialComMessageBroker of(int maxSize) {
@@ -46,7 +46,7 @@ public class TS_SerialComMessageBroker {
         }
     }
 
-    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(TS_ThreadSafeTrigger killTrigger, String command, Duration maxDuration, String filterPrefix, boolean filterContainCommand) {
+    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(TS_ThreadSyncTrigger killTrigger, String command, Duration maxDuration, String filterPrefix, boolean filterContainCommand) {
         if (!con.send(command)) {
             d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_SENDING");
             return Optional.empty();
