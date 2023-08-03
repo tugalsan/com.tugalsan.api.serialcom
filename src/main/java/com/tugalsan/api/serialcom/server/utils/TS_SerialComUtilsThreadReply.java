@@ -3,26 +3,26 @@ package com.tugalsan.api.serialcom.server.utils;
 import com.fazecast.jSerialComm.SerialPort;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.runnable.client.TGS_RunnableType1;
-import com.tugalsan.api.thread.server.TS_ThreadKillTrigger;
+import com.tugalsan.api.thread.server.safe.TS_ThreadSafeTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 import java.time.Duration;
 
-public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_ThreadKillTrigger> {
+public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_ThreadSafeTrigger> {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComUtilsThreadReply.class);
 
-    final private TS_ThreadKillTrigger killTrigger;
+    final private TS_ThreadSafeTrigger killTrigger;
     final private SerialPort serialPort;
     final private TGS_RunnableType1<String> onReply;
 
-    private TS_SerialComUtilsThreadReply(TS_ThreadKillTrigger killTrigger, SerialPort serialPort, TGS_RunnableType1<String> onReply) {
+    private TS_SerialComUtilsThreadReply(TS_ThreadSafeTrigger killTrigger, SerialPort serialPort, TGS_RunnableType1<String> onReply) {
         this.killTrigger = killTrigger;
         this.serialPort = serialPort;
         this.onReply = onReply;
     }
 
-    public static TS_SerialComUtilsThreadReply of(TS_ThreadKillTrigger killTrigger, SerialPort serialPort, TGS_RunnableType1<String> onReply) {
+    public static TS_SerialComUtilsThreadReply of(TS_ThreadSafeTrigger killTrigger, SerialPort serialPort, TGS_RunnableType1<String> onReply) {
         return new TS_SerialComUtilsThreadReply(killTrigger, serialPort, onReply);
     }
 
@@ -84,7 +84,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_Thread
     }
 
     @Override
-    public void run(TS_ThreadKillTrigger killTrigger) {
+    public void run(TS_ThreadSafeTrigger killTrigger) {
         while (!killMe) {
             TGS_UnSafe.run(() -> {
                 waitForNewData();
