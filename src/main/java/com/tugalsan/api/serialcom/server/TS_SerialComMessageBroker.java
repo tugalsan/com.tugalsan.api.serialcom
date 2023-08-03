@@ -2,10 +2,11 @@ package com.tugalsan.api.serialcom.server;
 
 import com.tugalsan.api.coronator.client.TGS_Coronator;
 import com.tugalsan.api.log.server.TS_Log;
-import com.tugalsan.api.thread.server.struct.async.TS_ThreadAsyncAwait;
-import com.tugalsan.api.thread.server.safe.TS_ThreadSafeLst;
+import com.tugalsan.api.thread.server.TS_ThreadKillTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
-import com.tugalsan.api.thread.server.struct.async_core.TS_ThreadAsyncCoreTimeoutException;
+import com.tugalsan.api.thread.server.async.TS_ThreadAsyncAwait;
+import com.tugalsan.api.thread.server.safe.TS_ThreadSafeLst;
+import com.tugalsan.api.thread.server.async.core.TS_ThreadAsyncCoreTimeoutException;
 import com.tugalsan.api.validator.client.TGS_ValidatorType1;
 import java.time.Duration;
 import java.util.Optional;
@@ -45,7 +46,7 @@ public class TS_SerialComMessageBroker {
         }
     }
 
-    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(String command, Duration maxDuration, String filterPrefix, boolean filterContainCommand) {
+    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(TS_ThreadKillTrigger killTrigger, String command, Duration maxDuration, String filterPrefix, boolean filterContainCommand) {
         if (!con.send(command)) {
             d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_SENDING");
             return Optional.empty();
@@ -59,11 +60,11 @@ public class TS_SerialComMessageBroker {
             }
             return true;
         };
-        var run = TS_ThreadAsyncAwait.callSingle(maxDuration, () -> TGS_Coronator.ofStr()
+        var run = TS_ThreadAsyncAwait.callSingle(killTrigger, maxDuration, kt -> TGS_Coronator.ofStr()
                 .anoint(reply -> {
-                    while (reply == null) {
+                    while (reply == null && killTrigger.hasNotTriggered()) {
                         reply = replies.findFirst(val -> condition.validate(val));
-                        TS_ThreadWait.of(Duration.ofMillis(100));
+                        TS_ThreadWait.milliseconds100();
                         Thread.yield();
                     }
                     return reply;

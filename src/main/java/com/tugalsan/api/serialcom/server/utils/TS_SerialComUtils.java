@@ -6,10 +6,9 @@ import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.stream.client.TGS_StreamUtils;
-import com.tugalsan.api.thread.server.struct.async.TS_ThreadAsync;
-import com.tugalsan.api.thread.server.safe.TS_ThreadSafeRunnable;
+import com.tugalsan.api.thread.server.TS_ThreadKillTrigger;
+import com.tugalsan.api.thread.server.async.TS_ThreadAsync;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
-import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,22 +55,22 @@ public class TS_SerialComUtils {
     }
     private static boolean dontDeleteMyTemporaryFilesDuringBootUp = false;
 
-    public static boolean disconnect(SerialPort serialPort) {
+    public static boolean disconnect(TS_ThreadKillTrigger killTrigger, SerialPort serialPort) {
         d.ci("disconnect", "");
-        return disconnect(serialPort, null);
+        return disconnect(killTrigger, serialPort, null);
     }
 
-    public static boolean disconnect(SerialPort serialPort, TS_ThreadSafeRunnable threadReply) {
+    public static boolean disconnect(TS_ThreadKillTrigger killTrigger, SerialPort serialPort, TS_SerialComUtilsThreadReply threadReply) {
         d.ci("disconnect", "threadReply");
         if (threadReply != null) {
             threadReply.killMe = true;
         }
         serialPort.removeDataListener();
-        TS_ThreadWait.seconds(null, 2);//FOR ARDUINO
+        TS_ThreadWait.seconds(d.className, killTrigger, 0);//FOR ARDUINO
         return serialPort.closePort();
     }
 
-    public static TS_ThreadSafeRunnable connect(SerialPort serialPort, TGS_RunnableType1<String> onReply) {
+    public static TS_SerialComUtilsThreadReply connect(TS_ThreadKillTrigger killTrigger, SerialPort serialPort, TGS_RunnableType1<String> onReply) {
         d.ci("connect", "onReply", onReply != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
@@ -83,75 +82,8 @@ public class TS_SerialComUtils {
             d.ce("connect", "Error on openPort");
             return null;
         }
-        var threadReply = new TS_ThreadSafeRunnable() {
-
-            private void waitForNewData() {
-                while (serialPort.bytesAvailable() == 0 || serialPort.bytesAvailable() == -1) {
-                    if (killMe) {
-                        return;
-                    }
-                    TS_ThreadWait.milliseconds(20);
-                }
-            }
-
-            private void appendToBuffer() {
-                if (killMe) {
-                    return;
-                }
-                var bytes = new byte[serialPort.bytesAvailable()];
-                var length = serialPort.readBytes(bytes, bytes.length);
-                if (length == -1) {
-                    return;
-                }
-                var string = new String(bytes);
-                if (string.isEmpty()) {
-                    return;
-                }
-                buffer.append(string);
-            }
-
-            private void processBuffer() {
-                if (killMe) {
-                    return;
-                }
-                //IS THERE ANY CMD?
-                var idx = buffer.indexOf("\n");
-                if (idx == -1) {
-                    return;
-                }
-                //PROCESS FIRST CMD
-                var firstCommand = buffer.substring(0, idx).replace("\r", "");
-                onReply.run(firstCommand);
-                //REMOVE FIRST CMD FROM BUFFER
-                var leftOver = buffer.length() == idx + 1
-                        ? ""
-                        : buffer.substring(idx + 1, buffer.length());
-                buffer.setLength(0);
-                buffer.append(leftOver);
-                //PROCESS LEFT OVER CMDS
-                processBuffer();
-            }
-
-            private void handleError(Exception e) {
-                if (killMe) {
-                    return;
-                }
-                e.printStackTrace();
-            }
-
-            @Override
-            public void run() {
-                while (!killMe) {
-                    TGS_UnSafe.run(() -> {
-                        waitForNewData();
-                        appendToBuffer();
-                        processBuffer();
-                    }, e -> handleError(e));
-                }
-            }
-            final private StringBuilder buffer = new StringBuilder();
-        };
-        TS_ThreadAsync.now(threadReply.setName(d.className + ".connect.threadReply"));
+        var threadReply = TS_SerialComUtilsThreadReply.of(killTrigger, serialPort, onReply);
+        TS_ThreadAsync.now(killTrigger, threadReply);
         return threadReply;
     }
 

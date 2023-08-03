@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.*;
 import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.utils.*;
-import com.tugalsan.api.thread.server.safe.TS_ThreadSafeRunnable;
+import com.tugalsan.api.thread.server.TS_ThreadKillTrigger;
 
 public class TS_SerialComConnection implements AutoCloseable {
 
@@ -31,7 +31,10 @@ public class TS_SerialComConnection implements AutoCloseable {
         return successfulPort() && successfulSetup() && successfulConnect() && port.isOpen();
     }
 
-    private TS_SerialComConnection(TS_SerialComOnReply onReply) {
+    private final TS_ThreadKillTrigger killTrigger;
+
+    private TS_SerialComConnection(TS_ThreadKillTrigger killTrigger, TS_SerialComOnReply onReply) {
+        this.killTrigger = killTrigger;
         //BIND MESSAGE BROKER
         if (onReply.onReply_customMessageBroker == null) {//use default broker
             this.messageBroker = TS_SerialComMessageBroker.of(onReply.defaultMessageBrokerMessageSize);
@@ -63,7 +66,7 @@ public class TS_SerialComConnection implements AutoCloseable {
             return;
         }
         //CONNECT AND BIND REPLY
-        this.threadReply = TS_SerialComUtils.connect(port, this.onReply);
+        this.threadReply = TS_SerialComUtils.connect(killTrigger, port, this.onReply);
         if (!successfulConnect()) {
             d.ce("constructor", "error detected", "!successfulConnect");
             onReply.onConnectError.connectError.run();
@@ -71,7 +74,7 @@ public class TS_SerialComConnection implements AutoCloseable {
         }
     }
     final private TS_SerialComMessageBroker messageBroker;
-    private TS_ThreadSafeRunnable threadReply;
+    private TS_SerialComUtilsThreadReply threadReply;
     final public TGS_RunnableType1<String> onReply;
     final public String parityName;
     final public String stopBitsName;
@@ -79,8 +82,8 @@ public class TS_SerialComConnection implements AutoCloseable {
     final public int baudRate;
     final public SerialPort port;
 
-    public static TS_SerialComConnection of(TS_SerialComOnReply onReply) {
-        return new TS_SerialComConnection(onReply);
+    public static TS_SerialComConnection of(TS_ThreadKillTrigger killTrigger, TS_SerialComOnReply onReply) {
+        return new TS_SerialComConnection(killTrigger, onReply);
     }
 
     @Override
@@ -89,7 +92,7 @@ public class TS_SerialComConnection implements AutoCloseable {
             d.ce("disconnect", "Error on not connected");
             return /*false*/;
         }
-        /*return*/ TS_SerialComUtils.disconnect(port, threadReply);
+        /*return*/ TS_SerialComUtils.disconnect(killTrigger, port, threadReply);
     }
 
     public boolean send(String command) {
