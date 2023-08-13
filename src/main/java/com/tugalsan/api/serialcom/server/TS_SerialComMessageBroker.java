@@ -6,7 +6,6 @@ import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.thread.server.async.TS_ThreadAsyncAwait;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncLst;
-import com.tugalsan.api.thread.server.async.core.TS_ThreadAsyncCoreTimeoutException;
 import com.tugalsan.api.validator.client.TGS_ValidatorType1;
 import java.time.Duration;
 import java.util.Optional;
@@ -75,16 +74,14 @@ public class TS_SerialComMessageBroker {
                 .coronate()
         );
         replies.removeAll(val -> condition.validate(val));
-        if (run.resultsForSuccessfulOnes.isEmpty() || run.resultsForSuccessfulOnes.get(0) == null) {
-            run.exceptions.forEach(e -> {
-                if (e instanceof TS_ThreadAsyncCoreTimeoutException) {
-                    d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
-                    return;
-                }
-                d.ct("sendTheCommand_and_fetchMeReplyInMaxSecondsOf->" + command, e);
-            });
+        if (run.timeout()) {
+            d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
             return Optional.empty();
         }
-        return Optional.of(run.resultsForSuccessfulOnes.get(0));
+        if (run.hasError()) {
+            d.ct("sendTheCommand_and_fetchMeReplyInMaxSecondsOf->" + command, run.exceptionIfFailed.get());
+            return Optional.empty();
+        }
+        return run.resultIfSuccessful;
     }
 }
