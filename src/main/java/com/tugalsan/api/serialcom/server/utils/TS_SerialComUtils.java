@@ -37,8 +37,12 @@ public class TS_SerialComUtils {
         return result;
     }
 
-    public static List<String> listNames() {
-        return TGS_StreamUtils.toLst(list().stream().map(p -> name(p)));
+    public static List<String> listNamesFull() {
+        return TGS_StreamUtils.toLst(list().stream().map(p -> nameFull(p)));
+    }
+
+    public static List<String> listNamesPort() {
+        return TGS_StreamUtils.toLst(list().stream().map(p -> namePort(p)));
     }
 
     public static List<SerialPort> list() {
@@ -87,9 +91,14 @@ public class TS_SerialComUtils {
         return threadReply;
     }
 
-    public static String name(SerialPort serialPort) {
+    public static String nameFull(SerialPort serialPort) {
         d.ci("name", "");
         return serialPort.getDescriptivePortName();
+    }
+
+    public static String namePort(SerialPort serialPort) {
+        d.ci("name", "");
+        return serialPort.getPortDescription();
     }
 
     public static boolean setup(SerialPort serialPort, int baudRate, int dataBits, STOP_BITS stopBits, PARITY parity) {

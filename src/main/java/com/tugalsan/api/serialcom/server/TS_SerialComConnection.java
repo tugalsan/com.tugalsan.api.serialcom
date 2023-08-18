@@ -10,8 +10,8 @@ public class TS_SerialComConnection implements AutoCloseable {
 
     final private static TS_Log d = TS_Log.of(true, TS_SerialComConnection.class);
 
-    final public String name() {
-        return port == null ? null : TS_SerialComUtils.name(port);
+    final public String namePort() {
+        return port == null ? null : TS_SerialComUtils.namePort(port);
     }
 
     final private boolean successfulPort() {
