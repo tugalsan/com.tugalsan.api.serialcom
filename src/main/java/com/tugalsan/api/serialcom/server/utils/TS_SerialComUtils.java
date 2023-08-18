@@ -98,7 +98,12 @@ public class TS_SerialComUtils {
 
     public static String namePort(SerialPort serialPort) {
         d.ci("name", "");
-        return serialPort.getPortDescription();
+//        d.cr("-", "serialPort.getSystemPortName()", serialPort.getDescriptivePortName());
+//        d.cr("-", "serialPort.getSystemPortName()", serialPort.getPortDescription());
+//        d.cr("-", "serialPort.getSystemPortName()", serialPort.getPortLocation());
+//        d.cr("-", "serialPort.getSystemPortName()", serialPort.getSystemPortName());
+//        d.cr("-", "serialPort.getSystemPortName()", serialPort.getSystemPortPath());
+        return serialPort.getSystemPortName();
     }
 
     public static boolean setup(SerialPort serialPort, int baudRate, int dataBits, STOP_BITS stopBits, PARITY parity) {
