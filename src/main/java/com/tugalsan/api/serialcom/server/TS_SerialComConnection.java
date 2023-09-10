@@ -5,6 +5,7 @@ import com.tugalsan.api.runnable.client.*;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.utils.*;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
+import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 
 public class TS_SerialComConnection implements AutoCloseable {
 
@@ -104,6 +105,7 @@ public class TS_SerialComConnection implements AutoCloseable {
     }
 
     public boolean useAndClose_WithDefaultMessageBroker(TGS_RunnableType2<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
+        //TODO: TGS_UnSafe.run(exe, exception, finalExe);
         try {
             if (!isConnected()) {
                 d.ce("useAndClose", "Error on not connected");
@@ -112,6 +114,7 @@ public class TS_SerialComConnection implements AutoCloseable {
             con_mb.run(this, messageBroker);
         } catch (Exception e) {
             d.ct("useAndClose", e);
+            TGS_UnSafe.throwIfInterruptedException(e);
             return false;
         } finally {
             close();
@@ -120,6 +123,7 @@ public class TS_SerialComConnection implements AutoCloseable {
     }
 
     public boolean useAndClose_WithCustomMessageBroker(TGS_RunnableType1<TS_SerialComConnection> con) {
+        //TODO: TGS_UnSafe.call(cmp, exception, finalExe)
         try {
             if (!isConnected()) {
                 d.ce("useAndClose", "Error on not connected");
@@ -127,6 +131,7 @@ public class TS_SerialComConnection implements AutoCloseable {
             }
             con.run(this);
         } catch (Exception e) {
+            TGS_UnSafe.throwIfInterruptedException(e);
             d.ct("useAndClose", e);
             return false;
         } finally {

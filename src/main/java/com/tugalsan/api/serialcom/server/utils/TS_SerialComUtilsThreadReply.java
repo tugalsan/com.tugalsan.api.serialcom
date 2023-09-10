@@ -77,6 +77,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_Thread
     }
 
     private void handleError(Exception e) {
+        TGS_UnSafe.throwIfInterruptedException(e);
         if (killMe) {
             return;
         }
