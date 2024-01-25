@@ -15,16 +15,16 @@ public class TS_SerialComConnection implements AutoCloseable {
         return port == null ? null : TS_SerialComUtils.namePort(port);
     }
 
-    final private boolean successfulPort() {
+    private boolean successfulPort() {
         return port != null;
     }
 
-    final private boolean successfulSetup() {
+    private boolean successfulSetup() {
         return successfulSetup;
     }
     private boolean successfulSetup;
 
-    final private boolean successfulConnect() {
+    private boolean successfulConnect() {
         return threadReply != null;
     }
 
