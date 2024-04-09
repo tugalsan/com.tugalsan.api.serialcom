@@ -5,6 +5,7 @@ import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.runnable.client.TGS_RunnableType1;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
+import com.tugalsan.api.union.server.TS_UnionUtils;
 import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 import java.time.Duration;
 
@@ -77,7 +78,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_Thread
     }
 
     private void handleError(Exception e) {
-        TGS_UnSafe.throwIfInterruptedException(e);
+        TS_UnionUtils.throwAsRuntimeExceptionIfInterruptedException(e);
         if (killMe) {
             return;
         }
