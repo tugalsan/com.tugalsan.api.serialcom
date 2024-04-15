@@ -6,9 +6,9 @@ import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.thread.server.async.TS_ThreadAsyncAwait;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncLst;
+import com.tugalsan.api.union.client.TGS_UnionExcuse;
 import com.tugalsan.api.validator.client.TGS_ValidatorType1;
 import java.time.Duration;
-import java.util.Optional;
 
 public class TS_SerialComMessageBroker {
 
@@ -45,10 +45,9 @@ public class TS_SerialComMessageBroker {
         }
     }
 
-    public Optional<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(TS_ThreadSyncTrigger killTrigger, String command, Duration maxDuration, String filterPrefix, boolean filterContainCommand) {
+    public TGS_UnionExcuse<String> sendTheCommand_and_fetchMeReplyInMaxSecondsOf(TS_ThreadSyncTrigger killTrigger, String command, Duration maxDuration, String filterPrefix, boolean filterContainCommand) {
         if (!con.send(command)) {
-            d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_SENDING");
-            return Optional.empty();
+            return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf:" + command, "ERROR_SENDING");
         }
         TGS_ValidatorType1<String> condition = val -> {
             if (filterContainCommand && !val.contains(command)) {
@@ -75,13 +74,11 @@ public class TS_SerialComMessageBroker {
         );
         replies.removeAll(val -> condition.validate(val));
         if (run.timeout()) {
-            d.ce("sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command, "ERROR_TIMEOUT");
-            return Optional.empty();
+            return TGS_UnionExcuse.ofExcuse(d.className,"sendTheCommand_and_fetchMeReplyInMaxSecondsOf: "+ command, "ERROR_TIMEOUT");
         }
         if (run.hasError()) {
-            d.ct("sendTheCommand_and_fetchMeReplyInMaxSecondsOf->" + command, run.exceptionIfFailed.get());
-            return Optional.empty();
+            return TGS_UnionExcuse.ofExcuse(d.className,"sendTheCommand_and_fetchMeReplyInMaxSecondsOf->" + command, run.exceptionIfFailed.get());
         }
-        return run.resultIfSuccessful;
+        return TGS_UnionExcuse.of(run.resultIfSuccessful.get());
     }
 }

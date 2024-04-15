@@ -3,7 +3,6 @@ package com.tugalsan.api.serialcom.server;
 import com.tugalsan.api.runnable.client.TGS_RunnableType1;
 import com.tugalsan.api.runnable.client.TGS_RunnableType2;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
-import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 
 public class TS_SerialComOnReply {
 
@@ -36,10 +35,10 @@ public class TS_SerialComOnReply {
     }
 
     public boolean onSuccess_useAndClose_connection(TS_ThreadSyncTrigger killTrigger, TGS_RunnableType1<TS_SerialComConnection> con) {
-        return TGS_UnSafe.call(() -> connect_AutoClosable(killTrigger).useAndClose_WithCustomMessageBroker(con), e -> false);
+        return connect_AutoClosable(killTrigger).useAndClose_WithCustomMessageBroker(con);
     }
 
     public boolean onSuccess_useAndClose_defaultMessageBroker(TS_ThreadSyncTrigger killTrigger, TGS_RunnableType2<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
-        return TGS_UnSafe.call(() -> connect_AutoClosable(killTrigger).useAndClose_WithDefaultMessageBroker(con_mb), e -> false);
+        return connect_AutoClosable(killTrigger).useAndClose_WithDefaultMessageBroker(con_mb);
     }
 }

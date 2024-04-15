@@ -5,8 +5,6 @@ import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.runnable.client.TGS_RunnableType1;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
-import com.tugalsan.api.union.server.TS_UnionUtils;
-import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 import java.time.Duration;
 
 public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_ThreadSyncTrigger> {
@@ -77,22 +75,12 @@ public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_Thread
         processBuffer();
     }
 
-    private void handleError(Exception e) {
-        TS_UnionUtils.throwAsRuntimeExceptionIfInterruptedException(e);
-        if (killMe) {
-            return;
-        }
-        e.printStackTrace();
-    }
-
     @Override
     public void run(TS_ThreadSyncTrigger killTrigger) {
         while (!killMe) {
-            TGS_UnSafe.run(() -> {
-                waitForNewData();
-                appendToBuffer();
-                processBuffer();
-            }, e -> handleError(e));
+            waitForNewData();
+            appendToBuffer();
+            processBuffer();
             if (killTrigger.hasTriggered()) {
                 killMe = true;
             }
