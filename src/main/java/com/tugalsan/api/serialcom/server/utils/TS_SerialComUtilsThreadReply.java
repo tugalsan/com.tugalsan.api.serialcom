@@ -81,7 +81,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_RunnableType1<TS_Thread
         if (killMe) {
             return;
         }
-        e.printStackTrace();
+//        e.printStackTrace();
     }
 
     @Override
