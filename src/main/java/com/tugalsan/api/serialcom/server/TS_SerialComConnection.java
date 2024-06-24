@@ -1,7 +1,9 @@
 package com.tugalsan.api.serialcom.server;
 
 import com.fazecast.jSerialComm.*;
-import com.tugalsan.api.runnable.client.*;
+import com.tugalsan.api.callable.client.TGS_CallableType1Void;
+import com.tugalsan.api.callable.client.TGS_CallableType2Void;
+
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.serialcom.server.utils.*;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
@@ -76,7 +78,7 @@ public class TS_SerialComConnection implements AutoCloseable {
     }
     final private TS_SerialComMessageBroker messageBroker;
     private TS_SerialComUtilsThreadReply threadReply;
-    final public TGS_RunnableType1<String> onReply;
+    final public TGS_CallableType1Void<String> onReply;
     final public String parityName;
     final public String stopBitsName;
     final public int dataBits;
@@ -104,7 +106,7 @@ public class TS_SerialComConnection implements AutoCloseable {
         return TS_SerialComUtils.send(port, command);
     }
 
-    public boolean useAndClose_WithDefaultMessageBroker(TGS_RunnableType2<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
+    public boolean useAndClose_WithDefaultMessageBroker(TGS_CallableType2Void<TS_SerialComConnection, TS_SerialComMessageBroker> con_mb) {
         //TODO: TGS_UnSafe.run(exe, exception, finalExe);
         try {
             if (!isConnected()) {
@@ -122,7 +124,7 @@ public class TS_SerialComConnection implements AutoCloseable {
         return true;
     }
 
-    public boolean useAndClose_WithCustomMessageBroker(TGS_RunnableType1<TS_SerialComConnection> con) {
+    public boolean useAndClose_WithCustomMessageBroker(TGS_CallableType1Void<TS_SerialComConnection> con) {
         //TODO: TGS_UnSafe.call(cmp, exception, finalExe)
         try {
             if (!isConnected()) {

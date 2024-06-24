@@ -1,8 +1,9 @@
 package com.tugalsan.api.serialcom.server.utils;
 
 import com.fazecast.jSerialComm.*;
+import com.tugalsan.api.callable.client.TGS_CallableType1Void;
 import com.tugalsan.api.coronator.client.TGS_Coronator;
-import com.tugalsan.api.runnable.client.*;
+
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.stream.client.TGS_StreamUtils;
@@ -74,7 +75,7 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    public static TS_SerialComUtilsThreadReply connect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_RunnableType1<String> onReply) {
+    public static TS_SerialComUtilsThreadReply connect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_CallableType1Void<String> onReply) {
         d.ci("connect", "onReply", onReply != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
