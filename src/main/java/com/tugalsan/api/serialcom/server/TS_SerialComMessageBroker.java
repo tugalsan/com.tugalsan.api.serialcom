@@ -1,13 +1,13 @@
 package com.tugalsan.api.serialcom.server;
 
-import com.tugalsan.api.coronator.client.TGS_Coronator;
+import com.tugalsan.api.callable.client.TGS_CallableType1_Coronator;
+import com.tugalsan.api.callable.client.TGS_CallableType1_Validate;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.thread.server.async.TS_ThreadAsyncAwait;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncLst;
 import com.tugalsan.api.union.client.TGS_UnionExcuse;
-import com.tugalsan.api.validator.client.TGS_ValidatorType1;
 import java.time.Duration;
 
 public class TS_SerialComMessageBroker {
@@ -49,7 +49,7 @@ public class TS_SerialComMessageBroker {
         if (!con.send(command)) {
             return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command + " -> ERROR_SENDING");
         }
-        TGS_ValidatorType1<String> condition = val -> {
+        TGS_CallableType1_Validate<String> condition = val -> {
             if (filterContainCommand && !val.contains(command)) {
                 return false;
             }
@@ -58,7 +58,7 @@ public class TS_SerialComMessageBroker {
             }
             return true;
         };
-        var run = TS_ThreadAsyncAwait.callSingle(killTrigger, maxDuration, kt -> TGS_Coronator.ofStr()
+        var run = TS_ThreadAsyncAwait.callSingle(killTrigger, maxDuration, kt -> TGS_CallableType1_Coronator.ofStr()
                 .anoint(reply -> {
                     while (reply == null && killTrigger.hasNotTriggered()) {
                         reply = replies.findFirst(val -> condition.validate(val));

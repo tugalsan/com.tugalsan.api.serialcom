@@ -1,8 +1,8 @@
 package com.tugalsan.api.serialcom.server.utils;
 
 import com.fazecast.jSerialComm.*;
-import com.tugalsan.api.callable.client.TGS_CallableType1Void;
-import com.tugalsan.api.coronator.client.TGS_Coronator;
+import com.tugalsan.api.callable.client.TGS_CallableType1_Coronator;
+import com.tugalsan.api.callable.client.TGS_CallableType1_Run;
 
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
@@ -75,7 +75,7 @@ public class TS_SerialComUtils {
         return serialPort.closePort();
     }
 
-    public static TS_SerialComUtilsThreadReply connect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_CallableType1Void<String> onReply) {
+    public static TS_SerialComUtilsThreadReply connect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_CallableType1_Run<String> onReply) {
         d.ci("connect", "onReply", onReply != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
@@ -119,7 +119,7 @@ public class TS_SerialComUtils {
             d.ce("setup", "Error on setNumDataBits");
             return false;
         }
-        result = serialPort.setNumStopBits(TGS_Coronator.ofInt()
+        result = serialPort.setNumStopBits(TGS_CallableType1_Coronator.ofInt()
                 .anoint(val -> SerialPort.ONE_STOP_BIT)
                 .anointAndCoronateIf(val -> stopBits == STOP_BITS.ONE_POINT_FIVE_STOP_BITS, val -> SerialPort.ONE_POINT_FIVE_STOP_BITS)
                 .anointAndCoronateIf(val -> stopBits == STOP_BITS.TWO_STOP_BITS, val -> SerialPort.TWO_STOP_BITS)
@@ -128,7 +128,7 @@ public class TS_SerialComUtils {
             d.ce("setup", "Error on setNumStopBits");
             return false;
         }
-        result = serialPort.setParity(TGS_Coronator.ofInt()
+        result = serialPort.setParity(TGS_CallableType1_Coronator.ofInt()
                 .anoint(val -> SerialPort.NO_PARITY)
                 .anointAndCoronateIf(val -> parity == PARITY.EVEN_PARITY, val -> SerialPort.EVEN_PARITY)
                 .anointAndCoronateIf(val -> parity == PARITY.ODD_PARITY, val -> SerialPort.ODD_PARITY)

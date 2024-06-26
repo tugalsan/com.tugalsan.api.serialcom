@@ -2,7 +2,7 @@ package com.tugalsan.api.serialcom.server;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.tugalsan.api.callable.client.TGS_CallableType1;
-import com.tugalsan.api.callable.client.TGS_CallableType1Void;
+import com.tugalsan.api.callable.client.TGS_CallableType1_Run;
 
 import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils;
 import java.util.List;
@@ -26,7 +26,7 @@ public class TS_SerialComBuilder {
         });
     }
 
-    public static TS_SerialComPort portFirst(TGS_CallableType1Void<SerialPort> port) {
+    public static TS_SerialComPort portFirst(TGS_CallableType1_Run<SerialPort> port) {
         var list = TS_SerialComUtils.list();
         var firstPort = list.isEmpty() ? null : list.get(0);
         port.run(firstPort);
