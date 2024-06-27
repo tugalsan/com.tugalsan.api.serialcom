@@ -1,7 +1,7 @@
 package com.tugalsan.api.serialcom.server;
 
-import com.tugalsan.api.callable.client.TGS_CallableType1_Coronator;
-import com.tugalsan.api.callable.client.TGS_CallableType1_Validate;
+import com.tugalsan.api.function.client.TGS_FuncEffectivelyFinal;
+import com.tugalsan.api.function.client.TGS_Func_OutBool_In1;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.TS_ThreadWait;
@@ -49,7 +49,7 @@ public class TS_SerialComMessageBroker {
         if (!con.send(command)) {
             return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command + " -> ERROR_SENDING");
         }
-        TGS_CallableType1_Validate<String> condition = val -> {
+        TGS_Func_OutBool_In1<String> condition = val -> {
             if (filterContainCommand && !val.contains(command)) {
                 return false;
             }
@@ -58,7 +58,7 @@ public class TS_SerialComMessageBroker {
             }
             return true;
         };
-        var run = TS_ThreadAsyncAwait.callSingle(killTrigger, maxDuration, kt -> TGS_CallableType1_Coronator.ofStr()
+        var run = TS_ThreadAsyncAwait.callSingle(killTrigger, maxDuration, kt -> TGS_FuncEffectivelyFinal.ofStr()
                 .anoint(reply -> {
                     while (reply == null && killTrigger.hasNotTriggered()) {
                         reply = replies.findFirst(val -> condition.validate(val));

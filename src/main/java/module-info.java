@@ -8,7 +8,7 @@ module com.tugalsan.api.serialcom {
     requires com.tugalsan.api.unsafe;
     requires com.tugalsan.api.union;
     requires com.tugalsan.api.stream;
-    requires com.tugalsan.api.callable;
+    requires com.tugalsan.api.function;
     
     exports com.tugalsan.api.serialcom.server;
     exports com.tugalsan.api.serialcom.server.utils;

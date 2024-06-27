@@ -1,7 +1,7 @@
 package com.tugalsan.api.serialcom.server.utils;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.tugalsan.api.callable.client.TGS_CallableType1_Run;
+import com.tugalsan.api.function.client.TGS_Func_In1;
 import com.tugalsan.api.log.server.TS_Log;
 
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
@@ -9,21 +9,21 @@ import com.tugalsan.api.thread.server.TS_ThreadWait;
 import com.tugalsan.api.unsafe.client.TGS_UnSafe;
 import java.time.Duration;
 
-public class TS_SerialComUtilsThreadReply implements TGS_CallableType1_Run<TS_ThreadSyncTrigger> {
+public class TS_SerialComUtilsThreadReply implements TGS_Func_In1<TS_ThreadSyncTrigger> {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComUtilsThreadReply.class);
 
     final private TS_ThreadSyncTrigger killTrigger;
     final private SerialPort serialPort;
-    final private TGS_CallableType1_Run<String> onReply;
+    final private TGS_Func_In1<String> onReply;
 
-    private TS_SerialComUtilsThreadReply(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_CallableType1_Run<String> onReply) {
+    private TS_SerialComUtilsThreadReply(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_Func_In1<String> onReply) {
         this.killTrigger = killTrigger;
         this.serialPort = serialPort;
         this.onReply = onReply;
     }
 
-    public static TS_SerialComUtilsThreadReply of(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_CallableType1_Run<String> onReply) {
+    public static TS_SerialComUtilsThreadReply of(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_Func_In1<String> onReply) {
         return new TS_SerialComUtilsThreadReply(killTrigger, serialPort, onReply);
     }
 

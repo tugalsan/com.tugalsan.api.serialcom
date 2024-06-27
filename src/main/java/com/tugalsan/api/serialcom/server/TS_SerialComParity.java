@@ -1,7 +1,7 @@
 package com.tugalsan.api.serialcom.server;
 
 
-import com.tugalsan.api.callable.client.TGS_CallableType0_Run;
+import com.tugalsan.api.function.client.TGS_Func;
 import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils.PARITY;
 
 public class TS_SerialComParity {
@@ -17,7 +17,7 @@ public class TS_SerialComParity {
         return new TS_SerialComParity(stopBits, parity);
     }
 
-    public TS_SerialComOnPortError onPortError(TGS_CallableType0_Run portError) {
+    public TS_SerialComOnPortError onPortError(TGS_Func portError) {
         return TS_SerialComOnPortError.of(this, portError);
     }
 }
