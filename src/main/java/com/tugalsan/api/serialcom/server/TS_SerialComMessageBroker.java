@@ -17,7 +17,7 @@ public class TS_SerialComMessageBroker {
     public TS_SerialComMessageBroker(int maxSize) { 
         this.maxSize = maxSize;
     }
-    final public TS_ThreadSyncLst<String> replies = TS_ThreadSyncLst.of();
+    final public TS_ThreadSyncLst<String> replies = TS_ThreadSyncLst.ofSlowRead();
     final public int maxSize;
 
     public static TS_SerialComMessageBroker of(int maxSize) {
