@@ -133,8 +133,8 @@ public class TS_SerialComConnection implements AutoCloseable {
             }
             con.run(this);
         } catch (Exception e) {
-            TGS_UnSafe.throwIfInterruptedException(e);
             d.ct("useAndClose", e);
+            TGS_UnSafe.throwIfInterruptedException(e);
             return false;
         } finally {
             close();
