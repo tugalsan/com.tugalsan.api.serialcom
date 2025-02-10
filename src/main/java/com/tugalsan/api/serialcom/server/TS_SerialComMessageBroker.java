@@ -1,11 +1,11 @@
 package com.tugalsan.api.serialcom.server;
 
-import com.tugalsan.api.function.client.TGS_FuncEffectivelyFinal;
-import com.tugalsan.api.function.client.TGS_Func_OutBool_In1;
+import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCEEffectivelyFinal;
+import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE_OutBool_In1;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
-import com.tugalsan.api.thread.server.TS_ThreadWait;
-import com.tugalsan.api.thread.server.async.TS_ThreadAsyncAwait;
+import com.tugalsan.api.thread.server.sync.TS_ThreadSyncWait;
+import com.tugalsan.api.thread.server.async.await.TS_ThreadAsyncAwait;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncLst;
 import com.tugalsan.api.union.client.TGS_UnionExcuse;
 import java.time.Duration;
@@ -49,7 +49,7 @@ public class TS_SerialComMessageBroker {
         if (!con.send(command)) {
             return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command + " -> ERROR_SENDING");
         }
-        TGS_Func_OutBool_In1<String> condition = val -> {
+        TGS_FuncMTUCE_OutBool_In1<String> condition = val -> {
             if (filterContainCommand && !val.contains(command)) {
                 return false;
             }
@@ -58,11 +58,11 @@ public class TS_SerialComMessageBroker {
             }
             return true;
         };
-        var run = TS_ThreadAsyncAwait.callSingle(killTrigger, maxDuration, kt -> TGS_FuncEffectivelyFinal.ofStr()
+        var run = TS_ThreadAsyncAwait.callSingle(killTrigger, maxDuration, kt -> TGS_FuncMTUCEEffectivelyFinal.ofStr()
                 .anoint(reply -> {
                     while (reply == null && killTrigger.hasNotTriggered()) {
                         reply = replies.findFirst(val -> condition.validate(val));
-                        TS_ThreadWait.milliseconds100();
+                        TS_ThreadSyncWait.milliseconds100();
                         Thread.yield();
                     }
                     return reply;

@@ -1,8 +1,8 @@
 package com.tugalsan.api.serialcom.server;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.tugalsan.api.function.client.TGS_Func_OutTyped_In1;
-import com.tugalsan.api.function.client.TGS_Func_In1;
+import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE_OutTyped_In1;
+import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE_In1;
 
 import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils;
 import java.util.List;
@@ -17,7 +17,7 @@ public class TS_SerialComBuilder {
         return TS_SerialComPort.of(serialPort);
     }
 
-    public static TS_SerialComPort port(TGS_Func_OutTyped_In1<SerialPort, List<SerialPort>> choose) {
+    public static TS_SerialComPort port(TGS_FuncMTUCE_OutTyped_In1<SerialPort, List<SerialPort>> choose) {
         return TS_SerialComPort.of(choose.call(TS_SerialComUtils.list()));
     }
 
@@ -26,7 +26,7 @@ public class TS_SerialComBuilder {
         });
     }
 
-    public static TS_SerialComPort portFirst(TGS_Func_In1<SerialPort> port) {
+    public static TS_SerialComPort portFirst(TGS_FuncMTUCE_In1<SerialPort> port) {
         var list = TS_SerialComUtils.list();
         var firstPort = list.isEmpty() ? null : list.get(0);
         port.run(firstPort);

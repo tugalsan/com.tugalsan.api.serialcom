@@ -1,15 +1,15 @@
 package com.tugalsan.api.serialcom.server.utils;
 
 import com.fazecast.jSerialComm.*;
-import com.tugalsan.api.function.client.TGS_FuncEffectivelyFinal;
-import com.tugalsan.api.function.client.TGS_Func_In1;
+import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCEEffectivelyFinal;
+import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE_In1;
 
 import com.tugalsan.api.list.client.TGS_ListUtils;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.stream.client.TGS_StreamUtils;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
-import com.tugalsan.api.thread.server.async.TS_ThreadAsync;
-import com.tugalsan.api.thread.server.TS_ThreadWait;
+import com.tugalsan.api.thread.server.async.run.TS_ThreadAsyncRun;
+import com.tugalsan.api.thread.server.sync.TS_ThreadSyncWait;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,11 +71,11 @@ public class TS_SerialComUtils {
             threadReply.killMe = true;
         }
         serialPort.removeDataListener();
-        TS_ThreadWait.seconds(d.className, killTrigger, 0);//FOR ARDUINO
+        TS_ThreadSyncWait.seconds(d.className, killTrigger, 0);//FOR ARDUINO
         return serialPort.closePort();
     }
 
-    public static TS_SerialComUtilsThreadReply connect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_Func_In1<String> onReply) {
+    public static TS_SerialComUtilsThreadReply connect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_FuncMTUCE_In1<String> onReply) {
         d.ci("connect", "onReply", onReply != null);
         var result = serialPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         if (!result) {
@@ -88,7 +88,7 @@ public class TS_SerialComUtils {
             return null;
         }
         var threadReply = TS_SerialComUtilsThreadReply.of(killTrigger, serialPort, onReply);
-        TS_ThreadAsync.now(killTrigger, threadReply);
+        TS_ThreadAsyncRun.now(killTrigger, threadReply);
         return threadReply;
     }
 
@@ -119,7 +119,7 @@ public class TS_SerialComUtils {
             d.ce("setup", "Error on setNumDataBits");
             return false;
         }
-        result = serialPort.setNumStopBits(TGS_FuncEffectivelyFinal.ofInt()
+        result = serialPort.setNumStopBits(TGS_FuncMTUCEEffectivelyFinal.ofInt()
                 .anoint(val -> SerialPort.ONE_STOP_BIT)
                 .anointAndCoronateIf(val -> stopBits == STOP_BITS.ONE_POINT_FIVE_STOP_BITS, val -> SerialPort.ONE_POINT_FIVE_STOP_BITS)
                 .anointAndCoronateIf(val -> stopBits == STOP_BITS.TWO_STOP_BITS, val -> SerialPort.TWO_STOP_BITS)
@@ -128,7 +128,7 @@ public class TS_SerialComUtils {
             d.ce("setup", "Error on setNumStopBits");
             return false;
         }
-        result = serialPort.setParity(TGS_FuncEffectivelyFinal.ofInt()
+        result = serialPort.setParity(TGS_FuncMTUCEEffectivelyFinal.ofInt()
                 .anoint(val -> SerialPort.NO_PARITY)
                 .anointAndCoronateIf(val -> parity == PARITY.EVEN_PARITY, val -> SerialPort.EVEN_PARITY)
                 .anointAndCoronateIf(val -> parity == PARITY.ODD_PARITY, val -> SerialPort.ODD_PARITY)
