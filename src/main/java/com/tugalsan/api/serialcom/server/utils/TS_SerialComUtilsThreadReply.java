@@ -19,7 +19,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_FuncMTUCE_In1<TS_Thread
     final private TGS_FuncMTUCE_In1<String> onReply;
 
     private TS_SerialComUtilsThreadReply(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_FuncMTUCE_In1<String> onReply) {
-        this.killTrigger = killTrigger;
+        this.killTrigger = TS_ThreadSyncTrigger.ofParent(killTrigger, d.className);
         this.serialPort = serialPort;
         this.onReply = onReply;
     }
