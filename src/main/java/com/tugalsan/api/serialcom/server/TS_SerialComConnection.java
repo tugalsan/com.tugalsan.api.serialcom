@@ -36,8 +36,8 @@ public class TS_SerialComConnection implements AutoCloseable {
 
     private final TS_ThreadSyncTrigger killTrigger;
 
-    private TS_SerialComConnection(TS_ThreadSyncTrigger killTrigger, TS_SerialComOnReply onReply) {
-        this.killTrigger = TS_ThreadSyncTrigger.of(d.className, killTrigger);
+    private TS_SerialComConnection(TS_ThreadSyncTrigger _killTrigger, TS_SerialComOnReply onReply) {
+        killTrigger = TS_ThreadSyncTrigger.of(d.className, _killTrigger);
         //BIND MESSAGE BROKER
         if (onReply.onReply_customMessageBroker == null) {//use default broker
             this.messageBroker = TS_SerialComMessageBroker.of(onReply.defaultMessageBrokerMessageSize);

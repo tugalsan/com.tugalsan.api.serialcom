@@ -15,6 +15,10 @@ import java.util.List;
 
 public class TS_SerialComUtils {
 
+    private TS_SerialComUtils() {
+
+    }
+
     final private static TS_Log d = TS_Log.of(TS_SerialComUtils.class);
 
     public static enum PARITY {
@@ -68,7 +72,7 @@ public class TS_SerialComUtils {
     public static boolean disconnect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TS_SerialComUtilsThreadReply threadReply) {
         d.ci("disconnect", "threadReply");
         if (threadReply != null) {
-            threadReply.killMe = true;
+            threadReply.killTrigger_wt.trigger(d.className + ".disconnect");
         }
         serialPort.removeDataListener();
         TS_ThreadSyncWait.seconds(d.className, killTrigger, 0);//FOR ARDUINO
@@ -88,7 +92,7 @@ public class TS_SerialComUtils {
             return null;
         }
         var threadReply = TS_SerialComUtilsThreadReply.of(killTrigger, serialPort, onReply);
-        TS_ThreadAsyncRun.now(killTrigger, threadReply);
+        TS_ThreadAsyncRun.now(killTrigger, kt -> threadReply.run());
         return threadReply;
     }
 

@@ -3,23 +3,23 @@ package com.tugalsan.api.serialcom.server.utils;
 import com.fazecast.jSerialComm.SerialPort;
 import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE_In1;
 import com.tugalsan.api.log.server.TS_Log;
-
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncWait;
 import com.tugalsan.api.function.client.TGS_FuncUtils;
 import com.tugalsan.api.function.client.maythrow.checkedexceptions.TGS_FuncMTCEUtils;
+import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE;
 import java.time.Duration;
 
-public class TS_SerialComUtilsThreadReply implements TGS_FuncMTUCE_In1<TS_ThreadSyncTrigger> {
+public class TS_SerialComUtilsThreadReply implements TGS_FuncMTUCE {
 
     final private static TS_Log d = TS_Log.of(TS_SerialComUtilsThreadReply.class);
 
-    final private TS_ThreadSyncTrigger killTrigger;
+    final public TS_ThreadSyncTrigger killTrigger_wt;
     final private SerialPort serialPort;
     final private TGS_FuncMTUCE_In1<String> onReply;
 
     private TS_SerialComUtilsThreadReply(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_FuncMTUCE_In1<String> onReply) {
-        this.killTrigger = TS_ThreadSyncTrigger.of(d.className, killTrigger);
+        this.killTrigger_wt = TS_ThreadSyncTrigger.of(d.className, killTrigger);
         this.serialPort = serialPort;
         this.onReply = onReply;
     }
@@ -28,20 +28,18 @@ public class TS_SerialComUtilsThreadReply implements TGS_FuncMTUCE_In1<TS_Thread
         return new TS_SerialComUtilsThreadReply(killTrigger, serialPort, onReply);
     }
 
-    public volatile boolean killMe = false;
-
     private void waitForNewData() {
         var dur = Duration.ofMillis(20);
         while (serialPort.bytesAvailable() == 0 || serialPort.bytesAvailable() == -1) {
-            if (killMe) {
+            if (killTrigger_wt.hasTriggered()) {
                 return;
             }
-            TS_ThreadSyncWait.of(d.className, killTrigger, dur);
+            TS_ThreadSyncWait.of(d.className, killTrigger_wt, dur);
         }
     }
 
     private void appendToBuffer() {
-        if (killMe) {
+        if (killTrigger_wt.hasTriggered()) {
             return;
         }
         var bytes = new byte[serialPort.bytesAvailable()];
@@ -57,7 +55,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_FuncMTUCE_In1<TS_Thread
     }
 
     private void processBuffer() {
-        if (killMe) {
+        if (killTrigger_wt.hasTriggered()) {
             return;
         }
         //IS THERE ANY CMD?
@@ -80,23 +78,20 @@ public class TS_SerialComUtilsThreadReply implements TGS_FuncMTUCE_In1<TS_Thread
 
     private void handleError(Exception e) {
         TGS_FuncUtils.throwIfInterruptedException(e);
-        if (killMe) {
+        if (killTrigger_wt.hasTriggered()) {
             return;
         }
 //        e.printStackTrace();
     }
 
     @Override
-    public void run(TS_ThreadSyncTrigger killTrigger) {
-        while (!killMe) {
+    public void run() {
+        while (!killTrigger_wt.hasNotTriggered()) {
             TGS_FuncMTCEUtils.run(() -> {
                 waitForNewData();
                 appendToBuffer();
                 processBuffer();
             }, e -> handleError(e));
-            if (killTrigger.hasTriggered()) {
-                killMe = true;
-            }
         }
     }
     final private StringBuilder buffer = new StringBuilder();
