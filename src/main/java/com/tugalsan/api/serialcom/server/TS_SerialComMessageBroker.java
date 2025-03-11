@@ -58,7 +58,7 @@ public class TS_SerialComMessageBroker {
             }
             return true;
         };
-        var run = TS_ThreadAsyncAwait.callSingle(killTrigger.newChild(d.className), maxDuration, kt -> TGS_FuncMTUCEEffectivelyFinal.ofStr()
+        var run = TS_ThreadAsyncAwait.callSingle(killTrigger.newChild(d.className).newChild("sendTheCommand_and_fetchMeReplyInMaxSecondsOf"), maxDuration, kt -> TGS_FuncMTUCEEffectivelyFinal.ofStr()
                 .anoint(reply -> {
                     while (reply == null && killTrigger.hasNotTriggered()) {
                         reply = replies.findFirst(val -> condition.validate(val));
