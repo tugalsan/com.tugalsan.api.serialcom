@@ -2,7 +2,7 @@ package com.tugalsan.api.serialcom.server;
 
 
 import com.tugalsan.api.serialcom.server.utils.TS_SerialComUtils.PARITY;
-import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE;
+import com.tugalsan.api.function.client.maythrowexceptions.unchecked.TGS_FuncMTU;
 
 public class TS_SerialComParity {
 
@@ -17,7 +17,7 @@ public class TS_SerialComParity {
         return new TS_SerialComParity(stopBits, parity);
     }
 
-    public TS_SerialComOnPortError onPortError(TGS_FuncMTUCE portError) {
+    public TS_SerialComOnPortError onPortError(TGS_FuncMTU portError) {
         return TS_SerialComOnPortError.of(this, portError);
     }
 }

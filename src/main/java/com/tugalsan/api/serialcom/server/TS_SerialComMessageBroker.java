@@ -1,7 +1,7 @@
 package com.tugalsan.api.serialcom.server;
 
-import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCEEffectivelyFinal;
-import com.tugalsan.api.function.client.maythrow.uncheckedexceptions.TGS_FuncMTUCE_OutBool_In1;
+import com.tugalsan.api.function.client.maythrowexceptions.unchecked.TGS_FuncMTUEffectivelyFinal;
+import com.tugalsan.api.function.client.maythrowexceptions.unchecked.TGS_FuncMTU_OutBool_In1;
 import com.tugalsan.api.log.server.TS_Log;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncTrigger;
 import com.tugalsan.api.thread.server.sync.TS_ThreadSyncWait;
@@ -49,7 +49,7 @@ public class TS_SerialComMessageBroker {
         if (!con.send(command)) {
             return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command + " -> ERROR_SENDING");
         }
-        TGS_FuncMTUCE_OutBool_In1<String> condition = val -> {
+        TGS_FuncMTU_OutBool_In1<String> condition = val -> {
             if (filterContainCommand && !val.contains(command)) {
                 return false;
             }
@@ -58,7 +58,7 @@ public class TS_SerialComMessageBroker {
             }
             return true;
         };
-        var run = TS_ThreadAsyncAwait.callSingle(killTrigger.newChild(d.className).newChild("sendTheCommand_and_fetchMeReplyInMaxSecondsOf"), maxDuration, kt -> TGS_FuncMTUCEEffectivelyFinal.ofStr()
+        var run = TS_ThreadAsyncAwait.callSingle(killTrigger.newChild(d.className).newChild("sendTheCommand_and_fetchMeReplyInMaxSecondsOf"), maxDuration, kt -> TGS_FuncMTUEffectivelyFinal.ofStr()
                 .anoint(reply -> {
                     while (reply == null && killTrigger.hasNotTriggered()) {
                         reply = replies.findFirst(val -> condition.validate(val));
