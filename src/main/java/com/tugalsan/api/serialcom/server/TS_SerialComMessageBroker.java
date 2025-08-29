@@ -77,8 +77,8 @@ public class TS_SerialComMessageBroker {
             return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command + " -> ERROR_TIMEOUT");
         }
         if (run.hasError()) {
-            return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command + " -> " + run.exceptionIfFailed.get());
+            return TGS_UnionExcuse.ofExcuse(d.className, "sendTheCommand_and_fetchMeReplyInMaxSecondsOf", command + " -> " + run.exceptionIfFailed().get());
         }
-        return TGS_UnionExcuse.of(run.resultIfSuccessful.get());
+        return TGS_UnionExcuse.of(run.result().get());
     }
 }
