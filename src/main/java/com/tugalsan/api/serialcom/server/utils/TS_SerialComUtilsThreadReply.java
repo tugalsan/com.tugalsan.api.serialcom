@@ -19,7 +19,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_FuncMTU {
     final private TGS_FuncMTU_In1<String> onReply;
 
     private TS_SerialComUtilsThreadReply(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TGS_FuncMTU_In1<String> onReply) {
-        this.killTrigger_wt = TS_ThreadSyncTrigger.of(d.className, killTrigger);
+        this.killTrigger_wt = TS_ThreadSyncTrigger.of(d.className(), killTrigger);
         this.serialPort = serialPort;
         this.onReply = onReply;
     }
@@ -34,7 +34,7 @@ public class TS_SerialComUtilsThreadReply implements TGS_FuncMTU {
             if (killTrigger_wt.hasTriggered()) {
                 return;
             }
-            TS_ThreadSyncWait.of(d.className, killTrigger_wt, dur);
+            TS_ThreadSyncWait.of(d.className(), killTrigger_wt, dur);
         }
     }
 

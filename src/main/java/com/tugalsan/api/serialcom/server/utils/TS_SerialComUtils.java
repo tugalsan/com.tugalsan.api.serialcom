@@ -53,7 +53,7 @@ public class TS_SerialComUtils {
     public static List<SerialPort> list() {
         if (!dontDeleteMyTemporaryFilesDuringBootUp) {
             dontDeleteMyTemporaryFilesDuringBootUp = true;
-            System.setProperty("fazecast.jSerialComm.appid", d.className);
+            System.setProperty("fazecast.jSerialComm.appid", d.className());
         }
         d.ci("list", "");
         var listArr = SerialPort.getCommPorts();
@@ -72,10 +72,10 @@ public class TS_SerialComUtils {
     public static boolean disconnect(TS_ThreadSyncTrigger killTrigger, SerialPort serialPort, TS_SerialComUtilsThreadReply threadReply) {
         d.ci("disconnect", "threadReply");
         if (threadReply != null) {
-            threadReply.killTrigger_wt.trigger(d.className + ".disconnect");
+            threadReply.killTrigger_wt.trigger(d.className() + ".disconnect");
         }
         serialPort.removeDataListener();
-        TS_ThreadSyncWait.seconds(d.className, killTrigger, 0);//FOR ARDUINO
+        TS_ThreadSyncWait.seconds(d.className(), killTrigger, 0);//FOR ARDUINO
         return serialPort.closePort();
     }
 
